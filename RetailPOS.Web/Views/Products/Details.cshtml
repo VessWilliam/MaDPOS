@@ -1,0 +1,43 @@
+@model RetailPOS.Web.Models.Product
+
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<div class="container">
+    <h1>Product Details</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Name</dt>
+                <dd class="col-sm-9">@Model.Name</dd>
+
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9">@(Model.Description ?? "No description available")</dd>
+
+                <dt class="col-sm-3">Price</dt>
+                <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+
+                <dt class="col-sm-3">Stock Quantity</dt>
+                <dd class="col-sm-9">@Model.StockQuantity</dd>
+
+                <dt class="col-sm-3">Category</dt>
+                <dd class="col-sm-9">@(Model.Category?.Name ?? "Uncategorized")</dd>
+
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <dt class="col-sm-3">Image</dt>
+                    <dd class="col-sm-9">
+                        <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid" style="max-width: 200px;" />
+                    </dd>
+                }
+            </dl>
+
+            <div class="mt-3">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,64 @@
+@model RetailPOS.Web.Models.SalesTransaction
+
+@{
+    ViewData["Title"] = "Sale Details";
+}
+
+<div class="container">
+    <h1>Sale Details</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Transaction Date</dt>
+                <dd class="col-sm-9">@Model.TransactionDate.ToString("g")</dd>
+
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">@Model.Status</dd>
+
+                <dt class="col-sm-3">Total Amount</dt>
+                <dd class="col-sm-9">@Model.TotalAmount.ToString("C")</dd>
+
+                @if (!string.IsNullOrEmpty(Model.CustomerName))
+                {
+                    <dt class="col-sm-3">Customer</dt>
+                    <dd class="col-sm-9">@Model.CustomerName</dd>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.PaymentMethod))
+                {
+                    <dt class="col-sm-3">Payment Method</dt>
+                    <dd class="col-sm-9">@Model.PaymentMethod</dd>
+                }
+            </dl>
+
+            <h4>Items</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.Product?.Name</td>
+                            <td>@item.Quantity</td>
+                            <td>@item.UnitPrice.ToString("C")</td>
+                            <td>@item.TotalPrice.ToString("C")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="mt-3">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2>POS Dashboard</h2>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Today's Sales</h5>
+                    <p class="card-text h3">$@ViewBag.TotalSales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Products</h5>
+                    <p class="card-text h3">@ViewBag.TotalProducts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <div class="list-group">
+                        <a asp-controller="Checkout" asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="fas fa-cash-register"></i> New Sale
+                        </a>
+                        <a asp-controller="Products" asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="fas fa-box"></i> Manage Products
+                        </a>
+                        <a asp-controller="Sales" asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="fas fa-history"></i> View Sales History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Sales</h5>
+                    <div class="list-group">
+                        @foreach (var transaction in ViewBag.RecentTransactions)
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Sale #@transaction.Id</h6>
+                                    <small>@transaction.TransactionDate.ToString("g")</small>
+                                </div>
+                                <p class="mb-1">$@transaction.TotalAmount</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
