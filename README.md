@@ -1,5 +1,6 @@
 # Retail POS System Assessment
 You’ve inherited a legacy internal point-of-sale system for a retail business. It’s buggy, partially built, lacks documentation, and has several unfinished features. Your task is to:
+
 	•	Extend the functionality
 	•	Debug critical issues
 	•	Build out reporting/analytics/api
@@ -7,16 +8,16 @@ You’ve inherited a legacy internal point-of-sale system for a retail business.
 	•	Follow Git and clean code practices
 
 ## Expected Deliverables
-	1.	Clean Repo
+	1. Clean Repo
 	•	Clear README guide
 	•	Meaningful commit messages
-	2.	Postman Collection
+	2. Postman Collection
 	•	Export the API endpoints as a Postman collection or any openapi format
 	•	Include the collection in the repo
-    3.  Hosting
+    3. Hosting
     •	Host the site on any free or budget hosting platform for at least 3 days for review purpose
 	•	DEPLOYMENT.md for hosting guide
-    4.	Final Report / Video
+    4. Final Report / Video
 	•	**SHORT!!!** write-up (1–2 pages) answering:
 	•	What challenges you faced?
     •	What have you done & how (dev / optimization)?
@@ -64,11 +65,11 @@ RetailPOS/
 | **Reporting**  | SQL/EF Core query design, aggregation, optimization, charts integration             |
 | **Debugging**  | Ability to trace errors, apply meaningful fixes, not just superficial try/catch     |
 | **Code Reading** | Refactoring legacy code, making sense of unclean structure                        |
-| **Crawler**    | Async handling, parsing logic, retries, real-world fault tolerance                  |
 | **DevOps**     | Ability to deploy, handle configs, resolve common deployment errors                 |
-| **Git Practices** | Frequent, descriptive commits; no force pushes; usage of branches (bonus)       |
+| **Git Practices** | Frequent, descriptive commits; no force pushes; usage of branches/gitflow (bonus)       |
+| **Crawler**    | Optional, async handling, parsing logic, retries, real-world fault tolerance                  |
 
-⸻
+
 
 ## Core Challenges (Hints / Guide)
 The end result is expected to be a professional and usable basic POS system.
