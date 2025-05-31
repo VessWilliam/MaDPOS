@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RetailPOS.Web.Models;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Authorization;
 
 namespace RetailPOS.Web.Controllers
 {
