@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using RetailPOS.Web.Data;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Services.IService;
+using RetailPOS.Web.Models.ViewModel;
+using RetailPOS.Web.Repositories.IRepository;
 
 namespace RetailPOS.Web.Controllers;
 
@@ -15,19 +17,20 @@ public class ProductsController : Controller
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<ProductsController> _logger;
     private readonly IViewModelFactory _viewModelFactory;
+    private readonly ICreateProductRepo _createProductRepo;
  
-
-
 
     public ProductsController(ApplicationDbContext context,
         IWebHostEnvironment environment,
         ILogger<ProductsController> logger,
-        IViewModelFactory viewModelFactory)
+        IViewModelFactory viewModelFactory,
+        ICreateProductRepo createProductRepo)
     {
         _context = context;
         _environment = environment;
         _logger = logger;
         _viewModelFactory = viewModelFactory;
+        _createProductRepo = createProductRepo; 
     }
 
     // GET: Products
@@ -61,73 +64,28 @@ public class ProductsController : Controller
 
     // GET: Products/Create
     public async Task<IActionResult> Create()  => View(await _viewModelFactory.CreateProductViewModel());
-    
-
 
 
     // POST: Products/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Name,Description,Price,StockQuantity,CategoryId")] Product product, IFormFile? image)
+    public async Task<IActionResult> Create(ProductViewModel product, string? imageUrl, IFormFile? image)
     {
-        try
+        if (!ModelState.IsValid) return View(await _viewModelFactory.CreateProductViewModel(product));
+        
+        product.ImageUrl = await _viewModelFactory.GetImageUrlAsync(imageUrl, image);
+        
+        var createdProduct = await _createProductRepo.CreateProductAsync(product);
+
+        if (createdProduct is null)
         {
-            _logger.LogInformation("Received product creation request. Name: {Name}, Price: {Price}, CategoryId: {CategoryId}",
-                product.Name, product.Price, product.CategoryId);
-
-            // Log ModelState errors if any
-            if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("ModelState is invalid");
-                foreach (var modelStateEntry in ModelState.Values)
-                {
-                    foreach (var error in modelStateEntry.Errors)
-                    {
-                        _logger.LogWarning("Validation error: {ErrorMessage}", error.ErrorMessage);
-                    }
-                }
-            }
-
-            // Temporarily bypass ModelState validation to test
-            if (image != null)
-            {
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                var uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(fileStream);
-                }
-
-                product.ImageUrl = "/uploads/" + uniqueFileName;
-            }
-            else
-            {
-                product.ImageUrl = "/images/placeholder.png";
-            }
-
-            _logger.LogInformation("Attempting to add product to database");
-            _context.Add(product);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Product created successfully: {Name}", product.Name);
-            return RedirectToAction(nameof(Index));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating product");
-            ModelState.AddModelError("", "An error occurred while creating the product. Please try again.");
+            ModelState.AddModelError("", "Failed to create product. Please try again.");
+            return View(await _viewModelFactory.CreateProductViewModel(product));
         }
 
-        var categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-        ViewBag.Categories = new SelectList(categories, "Id", "Name");
-        return View(product);
+        return RedirectToAction(nameof(Index));
     }
+
 
     // GET: Products/Edit/5
     public async Task<IActionResult> Edit(int? id)

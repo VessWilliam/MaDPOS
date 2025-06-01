@@ -78,16 +78,9 @@ public static class DbInitializer
                     Description = "Latest model smartphone",
                     Price = 999.99m,
                     StockQuantity = 50,
+                    ImageUrl = "https://img1.picmix.com/output/stamp/normal/8/3/6/4/1814638_7f76d.png",
                     CategoryId = electronicsCategory?.Id
                 },
-                new Product
-                {
-                    Name = "T-Shirt",
-                    Description = "Cotton t-shirt",
-                    Price = 19.99m,
-                    StockQuantity = 100,
-                    CategoryId = clothingCategory?.Id
-                }
             };
 
             await context.Products.AddRangeAsync(products);

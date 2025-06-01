@@ -9,11 +9,13 @@ namespace RetailPOS.Web.Services;
 public class ViewModelFactory : IViewModelFactory
 {
     private readonly ICategoryService _categoryService;
+    private readonly IWebHostEnvironment _environment;
 
-
-    public ViewModelFactory(ICategoryService categoryService)
+    public ViewModelFactory(ICategoryService categoryService, 
+        IWebHostEnvironment environment)
     {
-        _categoryService = categoryService; 
+        _categoryService = categoryService;
+        _environment = environment;
     }
 
 
@@ -61,6 +63,30 @@ public class ViewModelFactory : IViewModelFactory
         return new RegisterViewModel { Roles = roles };
     }
 
+    public async Task<string> GetImageUrlAsync(string? imageUrl, IFormFile? image)
+    {
+        if (!string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return imageUrl;
+        }
+
+        if (image is not null)
+        {
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = Guid.NewGuid() + "_" + image.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            await using var fileStream = new FileStream(filePath, FileMode.Create);
+            await image.CopyToAsync(fileStream);
+
+            return "/uploads/" + uniqueFileName;
+        }
+
+        return "/images/placeholder.png";
+    }
 
 
 

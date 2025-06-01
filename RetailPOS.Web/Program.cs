@@ -36,9 +36,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 //Repositories
 builder.Services.AddTransient(typeof(IRepository<>), typeof(Respository<>));
-
-
-
+builder.Services.AddTransient<ICreateProductRepo, CreateProductRepo>();
 
 
 //Add Seeder Database

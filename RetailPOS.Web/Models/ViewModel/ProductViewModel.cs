@@ -23,5 +23,6 @@ public class ProductViewModel
     [Required]
     public int? CategoryId { get; set; }
 
+    public string? ImageUrl { get; set; }
     public IEnumerable<SelectListItem>? Categories { get; set; } 
 }
