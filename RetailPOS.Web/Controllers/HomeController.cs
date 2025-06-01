@@ -19,9 +19,9 @@ public class HomeController : Controller
     public IActionResult Index()
     {
         // Get today's sales
-        var today = System.DateTime.Today;
+        var todayUtc = System.DateTime.UtcNow.Date;
         var totalSales = _context.SalesTransactions
-            .Where(s => s.TransactionDate.Date == today)
+            .Where(s => s.TransactionDate.Date >= todayUtc && s.TransactionDate < todayUtc.AddDays(1))
             .Sum(s => (double)s.TotalAmount);
 
         // Get total products

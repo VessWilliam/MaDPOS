@@ -15,15 +15,30 @@
                         <label asp-for="Email"></label>
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
+
                     <div class="form-floating mb-3">
-                        <input asp-for="Password" class="form-control" placeholder="Password" />
+                        <input asp-for="FirstName" class="form-control" placeholder="Adam" />
+                        <label asp-for="FirstName"></label>
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="LastName" class="form-control" placeholder="Stone" />
+                        <label asp-for="LastName"></label>
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Password" class="form-control
+                               @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "is-invalid" : "" )"
+                                placeholder="Password" />
                         <label asp-for="Password"></label>
-                        <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
                     <div class="form-floating mb-3">
-                        <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm Password" />
+                        <input asp-for="ConfirmPassword" class="form-control
+                              @(ViewData.ModelState["ConfirmPassword"]?.Errors.Count > 0 ? "is-invalid" : "" )" 
+                              placeholder="Confirm Password" />
                         <label asp-for="ConfirmPassword"></label>
-                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Register</button>

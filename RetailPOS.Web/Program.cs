@@ -3,17 +3,26 @@ using Microsoft.AspNetCore.Identity;
 using RetailPOS.Web.Data;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Services;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
+using RetailPOS.Web.Services.IService;
+using RetailPOS.Web;
+using Mapster;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString)
+    .EnableDetailedErrors()
+    .EnableSensitiveDataLogging(false));
+
+//Add Custom Services
+builder.Services.AddScoped<IAccountService, AccountService>();  
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -78,5 +87,8 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
+
+
+MappingConfig.RegisterMapping();
 
 app.Run();

@@ -1,140 +1,91 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RetailPOS.Web.Models;
-using System.ComponentModel.DataAnnotations;
+using RetailPOS.Web.Services.IService;
 
-namespace RetailPOS.Web.Controllers
+namespace RetailPOS.Web.Controllers;
+
+public class AccountController : Controller
 {
-    public class AccountController : Controller
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IAccountService _accountService;
+
+    public AccountController(
+        IAccountService accountService,
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager)
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        _userManager = userManager;
+        _signInManager = signInManager;
+        _accountService = accountService;
+    }
 
-        public AccountController(
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-        }
+    [HttpGet]
+    public IActionResult Register() => View();
 
-        [HttpGet]
-        public IActionResult Register()
-        {
-            return View();
-        }
 
-        [HttpPost]
-        public async Task<IActionResult> Register(RegisterViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = new ApplicationUser
-                {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName
-                };
-
-                var result = await _userManager.CreateAsync(user, model.Password);
-
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
-
+    [HttpPost]
+    public async Task<IActionResult> Register(RegisterViewModel model)
+    {
+        if (!ModelState.IsValid)
             return View(model);
-        }
 
-        [HttpGet]
-        public IActionResult Login(string? returnUrl = null)
+        var (result, user) = await _accountService.RegisterUserAsync(model);
+
+        if (result.Succeeded)
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
-        {
-            ViewData["ReturnUrl"] = returnUrl;
-
-            if (ModelState.IsValid)
-            {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-
-                if (result.Succeeded)
-                {
-                    var user = await _userManager.FindByEmailAsync(model.Email);
-                    if (user != null)
-                    {
-                        user.LastLoginAt = DateTime.UtcNow;
-                        await _userManager.UpdateAsync(user);
-                    }
-
-                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    {
-                        return Redirect(returnUrl);
-                    }
-                    return RedirectToAction("Index", "Home");
-                }
-
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-            }
-
-            return View(model);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Logout()
-        {
-            await _signInManager.SignOutAsync();
+            TempData["Success"] = "You have register and sign in successfully.";
             return RedirectToAction("Index", "Home");
         }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(nameof(model.Password), error.Description);
+        }
+
+        return View(model);
     }
 
-    public class RegisterViewModel
+    [HttpGet]
+    public IActionResult Login(string? returnUrl = null)
     {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
-
-        [Required]
-        [StringLength(100)]
-        public string FirstName { get; set; } = string.Empty;
-
-        [Required]
-        [StringLength(100)]
-        public string LastName { get; set; } = string.Empty;
-
-        [Required]
-        [StringLength(100, MinimumLength = 8)]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
-
-        [DataType(DataType.Password)]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; } = string.Empty;
+        ViewData["ReturnUrl"] = returnUrl;
+        return View();
     }
 
-    public class LoginViewModel
+    [HttpPost]
+    public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
     {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
+        ViewData["ReturnUrl"] = returnUrl;
 
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
+        if (!ModelState.IsValid)
+            return View(model);
 
-        [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; }
+        var (result, user) = await _accountService.LoginUserAsync(model);
+
+        if (!result.Succeeded)
+        {
+            TempData["Error"] = "There was a problem logging In. Please try again.";
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return View(model);
+        }
+
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
+
+        return RedirectToAction("Index", "Home");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Logout()
+    {
+        bool success = await _accountService.SignOutUserAsync();
+
+        if (!success)
+            TempData["Error"] = "There was a problem logging you out. Please try again.";
+        else
+            TempData["Success"] = "You have been logged out successfully.";
+
+        return RedirectToAction("Index", "Home");
     }
 }

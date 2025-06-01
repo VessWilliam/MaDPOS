@@ -86,6 +86,12 @@ body {
     color: white;
 }
 
+
+input.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
 .table {
     background-color: #5a5656a6;
     border-radius: 0.5rem;
@@ -131,4 +137,9 @@ body {
 .alert-info {
     background-color: #cff4fc;
     color: #055160;
+}
+
+
+.toast {
+    opacity: 1 !important; 
 }
