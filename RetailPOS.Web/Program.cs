@@ -6,6 +6,8 @@ using RetailPOS.Web.Services;
 using RetailPOS.Web.Services.IService;
 using RetailPOS.Web;
 using RetailPOS.Web.Helper;
+using RetailPOS.Web.Repositories;
+using RetailPOS.Web.Repositories.IRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,14 +24,26 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     .EnableSensitiveDataLogging(false));
 
 
+// Add Dapper Read 
+builder.Services.AddScoped<IDapperBaseService, DapperBaseService>();
+
+
 //Add Custom Services
 builder.Services.AddScoped<PriceCrawlerService>();
 builder.Services.AddScoped<IViewModelFactory, ViewModelFactory>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 
 
+//Repositories
+builder.Services.AddTransient(typeof(IRepository<>), typeof(Respository<>));
+
+
+
+
+
 //Add Seeder Database
 builder.Services.AddTransient<DatabaseSeeder>();
+
 
 // Add .Net Identity 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
