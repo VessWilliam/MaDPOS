@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using RetailPOS.Web.Models;
+using RetailPOS.Web.Models.ViewModel;
 using RetailPOS.Web.Services.IService;
 using RetailPOS.Web.Utility;
 
@@ -7,6 +8,40 @@ namespace RetailPOS.Web.Services;
 
 public class ViewModelFactory : IViewModelFactory
 {
+    private readonly ICategoryService _categoryService;
+
+
+    public ViewModelFactory(ICategoryService categoryService)
+    {
+        _categoryService = categoryService; 
+    }
+
+
+    public async Task<ProductViewModel> CreateProductViewModel(ProductViewModel? model = null)
+    {
+
+        var categories =  await _categoryService.GetCategoryAsync();
+
+        var catergoriesList = categories.Select(c => new SelectListItem
+        {
+
+            Text = c.Name,
+            Value = c.Id.ToString()
+
+        }).ToList();
+
+        if (model is not null) { 
+          
+            model.Categories = catergoriesList;
+            return model;
+        }
+
+        return new ProductViewModel
+        {
+            Categories = catergoriesList
+        };
+    }
+
     public RegisterViewModel CreateRegisterViewModel(RegisterViewModel? model = null)
     {
 
@@ -25,4 +60,9 @@ public class ViewModelFactory : IViewModelFactory
         }
         return new RegisterViewModel { Roles = roles };
     }
+
+
+
+
+
 }
