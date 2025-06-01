@@ -9,37 +9,50 @@
             <div class="card-body">
                 <h2 class="text-center mb-4">@ViewData["Title"]</h2>
                 <form asp-action="Register" method="post">
-                    <div asp-validation-summary="All" class="text-danger"></div>
-                    <div class="form-floating mb-3">
+
+                    <div class="form-floating mb-2">
                         <input asp-for="Email" class="form-control" placeholder="name@example.com" />
                         <label asp-for="Email"></label>
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
 
-                    <div class="form-floating mb-3">
+                    <div class="form-floating mb-2">
                         <input asp-for="FirstName" class="form-control" placeholder="Adam" />
                         <label asp-for="FirstName"></label>
                         <span asp-validation-for="FirstName" class="text-danger"></span>
                     </div>
 
-                    <div class="form-floating mb-3">
+                    <div class="form-floating mb-2">
                         <input asp-for="LastName" class="form-control" placeholder="Stone" />
                         <label asp-for="LastName"></label>
                         <span asp-validation-for="LastName" class="text-danger"></span>
                     </div>
 
-                    <div class="form-floating mb-3">
+                    <div class="form-floating mb-2">
                         <input asp-for="Password" class="form-control
                                @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "is-invalid" : "" )"
-                                placeholder="Password" />
+                               placeholder="Password" />
                         <label asp-for="Password"></label>
+                        <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
-                    <div class="form-floating mb-3">
+                    <div class="form-floating mb-2">
                         <input asp-for="ConfirmPassword" class="form-control
-                              @(ViewData.ModelState["ConfirmPassword"]?.Errors.Count > 0 ? "is-invalid" : "" )" 
-                              placeholder="Confirm Password" />
+                              @(ViewData.ModelState["ConfirmPassword"]?.Errors.Count > 0 ? "is-invalid" : "" )"
+                               placeholder="Confirm Password" />
                         <label asp-for="ConfirmPassword"></label>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                     </div>
+                    <div class="form-floating mb-2">
+                        <select asp-for="SelectedRole" asp-items="Model.Roles"
+                                class="form-select bg-dark text-light">
+                            <option value=""> Select Role </option>
+                        </select>
+                        <label asp-for="SelectedRole"></label>
+                        <span asp-validation-for="SelectedRole" class="text-danger"></span>
+
+                    </div>
+
+
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Register</button>
                     </div>

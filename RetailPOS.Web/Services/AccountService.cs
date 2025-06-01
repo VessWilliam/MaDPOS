@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Services.IService;
+using RetailPOS.Web.Utility;
 using System;
 
 namespace RetailPOS.Web.Services;
@@ -30,8 +31,8 @@ public class AccountService : IAccountService
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
-            if (result.Succeeded) await _signInManager.SignInAsync(user, isPersistent: false);
-
+            if (result.Succeeded)  await _userManager.AddToRoleAsync(user, model.SelectedRole);
+           
             return (result, user);
         }
         catch (Exception ex)

@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Services.IService;
+using RetailPOS.Web.Utility;
 
 namespace RetailPOS.Web.Controllers;
 
@@ -10,32 +13,36 @@ public class AccountController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IAccountService _accountService;
+    private readonly IViewModelFactory _viewModelFactory;   
 
     public AccountController(
         IAccountService accountService,
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        SignInManager<ApplicationUser> signInManager,
+        IViewModelFactory viewModelFactory)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _accountService = accountService;
+        _viewModelFactory = viewModelFactory;
     }
 
     [HttpGet]
-    public IActionResult Register() => View();
-
+    [Authorize(Roles = UserRoleConstant.Admin)]
+    public IActionResult Register() => View(_viewModelFactory.CreateRegisterViewModel());
+    
 
     [HttpPost]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (!ModelState.IsValid)
-            return View(model);
+            return View(_viewModelFactory.CreateRegisterViewModel(model));
 
         var (result, user) = await _accountService.RegisterUserAsync(model);
 
         if (result.Succeeded)
         {
-            TempData["Success"] = "You have register and sign in successfully.";
+            TempData["Success"] = $"You have register user {user!.FirstName + " " + user!.LastName} success.";
             return RedirectToAction("Index", "Home");
         }
 
@@ -44,7 +51,7 @@ public class AccountController : Controller
             ModelState.AddModelError(nameof(model.Password), error.Description);
         }
 
-        return View(model);
+        return View(_viewModelFactory.CreateRegisterViewModel(model));
     }
 
     [HttpGet]
@@ -70,7 +77,7 @@ public class AccountController : Controller
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
-
+            
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
 
         return RedirectToAction("Index", "Home");
@@ -81,11 +88,11 @@ public class AccountController : Controller
     {
         bool success = await _accountService.SignOutUserAsync();
 
-        if (!success)
-            TempData["Error"] = "There was a problem logging you out. Please try again.";
-        else
-            TempData["Success"] = "You have been logged out successfully.";
+        TempData[success ? "Success" : "Error"] = success
+           ? "You have been logged out successfully."
+           : "There was a problem logging you out. Please try again.";
 
         return RedirectToAction("Index", "Home");
     }
+
 }

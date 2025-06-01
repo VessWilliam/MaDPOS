@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc.Rendering;
+using RetailPOS.Web.Utility;
 using System.ComponentModel.DataAnnotations;
 
 namespace RetailPOS.Web.Models;
@@ -28,4 +30,11 @@ public class RegisterViewModel
     [Display(Name = "Confirm password")]
     [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
     public string ConfirmPassword { get; set; } = string.Empty;
+
+    [Required]
+    [Display(Name = "Role")]
+    public string SelectedRole { get; set; } = string.Empty;
+
+    public IEnumerable<SelectListItem>? Roles { get; set; }
+
 }

@@ -5,10 +5,12 @@ using RetailPOS.Web.Models;
 using RetailPOS.Web.Services;
 using RetailPOS.Web.Services.IService;
 using RetailPOS.Web;
-using Mapster;
+using RetailPOS.Web.Helper;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Add Mapster
+MappingConfig.RegisterMapping();
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -19,10 +21,17 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     .EnableDetailedErrors()
     .EnableSensitiveDataLogging(false));
 
-//Add Custom Services
-builder.Services.AddScoped<IAccountService, AccountService>();  
 
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+//Add Custom Services
+builder.Services.AddScoped<PriceCrawlerService>();
+builder.Services.AddScoped<IViewModelFactory, ViewModelFactory>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+
+
+//Add Seeder Database
+builder.Services.AddTransient<DatabaseSeeder>();
+
+// Add .Net Identity 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -35,6 +44,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.ConfigureApplicationCookie(options =>
@@ -43,7 +53,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
 
-builder.Services.AddScoped<PriceCrawlerService>();
 
 var app = builder.Build();
 
@@ -71,24 +80,13 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
+
 
 // Seed the database
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    try
-    {
-        await DbInitializer.InitializeAsync(services);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
-    }
+    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+    await seeder.SeedAync();
 }
-
-
-MappingConfig.RegisterMapping();
 
 app.Run();
