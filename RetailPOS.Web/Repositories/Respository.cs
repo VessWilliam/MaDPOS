@@ -36,17 +36,29 @@ public class Respository<T> : IRepository<T> where T : class
         return await context.SaveChangesAsync();
     }
 
-    public async Task<int> DeleteAsync(T deleteEntity)
+    public async Task<int> DeleteAsync(int id)
     {
         using var context = _contextFactory.CreateDbContext();
-        context.Set<T>().Remove(deleteEntity);
+
+        var existingEntity = await context.Set<T>().FindAsync(id);
+
+        if (existingEntity is null) return 0;
+
+        context.Set<T>().Remove(existingEntity);
+
         return await context.SaveChangesAsync();
     }
 
-    public async Task<int> UpdateAsync(T updatedEntity)
+    public async Task<int> UpdateAsync(int id, T updatedEntity)
     {
         using var context = _contextFactory.CreateDbContext();
-        context.Set<T>().Update(updatedEntity);
+
+        var existingEntity = await context.Set<T>().FindAsync(id);
+
+        if (existingEntity is null) return 0;
+
+        context.Entry(existingEntity).CurrentValues.SetValues(updatedEntity);
+
         return await context.SaveChangesAsync();
     }
 }

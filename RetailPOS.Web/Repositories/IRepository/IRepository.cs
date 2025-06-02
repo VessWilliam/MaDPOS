@@ -6,11 +6,11 @@ public interface IRepository<T> where T : class
 
     Task<int> AddRangeAsync(IEnumerable<T> entities);
 
-    Task<int> DeleteAsync(T deleteEntity);
-
     Task<IEnumerable<T>> GetAllAsync();
 
     Task<T> GetByIdAsync(int id);
 
-    Task<int> UpdateAsync(T updatedEntity);
+    Task<int> DeleteAsync(int id);
+
+    Task<int> UpdateAsync(int id, T updateEntity);
 }

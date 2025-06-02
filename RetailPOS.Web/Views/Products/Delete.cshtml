@@ -1,0 +1,51 @@
+@model RetailPOS.Web.Models.ViewModel.ProductViewModel
+
+@{
+    ViewData["Title"] = "Delete Product";
+}
+
+<div class="container">
+    <h1>Delete Product</h1>
+
+    <div class="alert alert-danger">
+        <h4>Are you sure you want to delete this product</h4>
+        <p>This action cannot be undone.</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <dl class="row">
+               
+                <dt class="col-sm-3">@nameof(Model.Name)</dt>
+                <dd class="col-sm-9">@Model.Name</dd>
+
+                <dt class="col-sm-3">@nameof(Model.CategoryName)</dt>
+                <dd class="col-sm-9">@Model.CategoryName</dd>
+
+                <dt class="col-sm-3">@nameof(Model.Description)</dt>
+                <dd class="col-sm-9">@Model.Description</dd>
+
+          
+                <dt class="col-sm-3">@nameof(Model.Price)</dt>
+                <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+
+                <dt class="col-sm-3">@nameof(Model.StockQuantity)</dt>
+                <dd class="col-sm-9">@Model.StockQuantity</dd>
+            </dl>
+
+            <div class="col-md-4 mb-3">
+                <label class="form-label text-muted">Current Image</label>
+                <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/placeholder.png" : Model.ImageUrl)"
+                     alt="@Model.Name"
+                     class="img-thumbnail w-100"
+                     style="max-height: 150px; object-fit: cover;" />
+            </div>
+
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger">Delete</button>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </form>
+        </div>
+    </div>
+</div>
