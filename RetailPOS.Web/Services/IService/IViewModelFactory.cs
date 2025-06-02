@@ -10,6 +10,6 @@ public interface IViewModelFactory
 
     Task<ProductViewModel> CreateProductViewModel(ProductViewModel? model = null);
 
-    Task<string> GetImageUrlAsync(string imageUrl, IFormFile image);
+    Task<string> GetImageUrlAsync(string? imageUrl, IFormFile? image);
 
 }

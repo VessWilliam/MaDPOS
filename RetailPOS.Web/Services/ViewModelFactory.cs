@@ -76,13 +76,13 @@ public class ViewModelFactory : IViewModelFactory
             if (!Directory.Exists(uploadsFolder))
                 Directory.CreateDirectory(uploadsFolder);
 
-            var uniqueFileName = Guid.NewGuid() + "_" + image.FileName;
+            var uniqueFileName = $"{Guid.NewGuid()}_{image.FileName}";
             var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
             await using var fileStream = new FileStream(filePath, FileMode.Create);
             await image.CopyToAsync(fileStream);
 
-            return "/uploads/" + uniqueFileName;
+            return $"/uploads/{uniqueFileName}";
         }
 
         return "/images/placeholder.png";

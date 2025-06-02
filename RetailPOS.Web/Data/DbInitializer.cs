@@ -78,7 +78,7 @@ public static class DbInitializer
                     Description = "Latest model smartphone",
                     Price = 999.99m,
                     StockQuantity = 50,
-                    ImageUrl = "https://img1.picmix.com/output/stamp/normal/8/3/6/4/1814638_7f76d.png",
+                    ImageUrl = "https://i.pinimg.com/736x/a8/dc/5c/a8dc5cf1dad0a00983c9d1992efd20ee.jpg",
                     CategoryId = electronicsCategory?.Id
                 },
             };
