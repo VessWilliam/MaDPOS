@@ -1,9 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using RetailPOS.Web.Data;
-using RetailPOS.Web.Models;
 using RetailPOS.Web.Services.IService;
 using RetailPOS.Web.Models.ViewModel;
 using RetailPOS.Web.Repositories.IRepository;
@@ -13,46 +9,38 @@ namespace RetailPOS.Web.Controllers;
 [Authorize]
 public class ProductsController : Controller
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IWebHostEnvironment _environment;
-    private readonly ILogger<ProductsController> _logger;
     private readonly IViewModelFactory _viewModelFactory;
-    private readonly ICreateProductRepo _createProductRepo;
     private readonly IProductService _productService;
-
-
-    public ProductsController(ApplicationDbContext context,
-        IWebHostEnvironment environment,
-        ILogger<ProductsController> logger,
+    public ProductsController(
         IViewModelFactory viewModelFactory,
-        ICreateProductRepo createProductRepo,
+        IProductRepo productRepo,
         IProductService productService)
     {
-        _context = context;
-        _environment = environment;
-        _logger = logger;
         _viewModelFactory = viewModelFactory;
-        _createProductRepo = createProductRepo;
         _productService = productService;
     }
 
-    // GET: Products
+    #region GET: Products
     public async Task<IActionResult> Index() => View(await _productService.GetProductViewModelListsAsync());
-    
+    #endregion
 
-    // GET: Products/Details/5
+
+    #region GET: Products/Details/5
     public async Task<IActionResult> Details(int? id)
     {
         if (id is null) return NotFound();
         var product = await _productService.GetProductViewModelWithIdAsync(id);
         return product is null ? NotFound() : View( _viewModelFactory.CreateProductViewModel(product));
     }
+    #endregion
 
-    // GET: Products/Create
+
+    #region GET: Products/Create
     public async Task<IActionResult> Create() => View(await _viewModelFactory.CreateProductViewModel());
+    #endregion
+    
 
-
-    // POST: Products/Create
+    #region POST: Products/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ProductViewModel product, string? imageUrl, IFormFile? image)
@@ -61,7 +49,7 @@ public class ProductsController : Controller
 
         product.ImageUrl = await _viewModelFactory.GetImageUrlAsync(imageUrl, image);
 
-        var createdProduct = await _createProductRepo.CreateProductAsync(product);
+        var createdProduct = await _productService.CreateProductViewModelAsync(product);
 
         if (createdProduct is null)
         {
@@ -71,72 +59,49 @@ public class ProductsController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+    #endregion
 
 
-    // GET: Products/Edit/5
+    #region GET: Products/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
         var product = await _productService.GetProductViewModelWithIdAsync(id);
         return (product is null) ? NotFound() : View(await _viewModelFactory.CreateProductViewModel(product));
     }
+    #endregion
 
-    // POST: Products/Edit/5
+
+    #region POST: Products/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,StockQuantity,CategoryId,ImageUrl")] Product product, IFormFile? image)
+    public async Task<IActionResult> Edit(int id, ProductViewModel product, string? imageUrl, IFormFile? image)
     {
-        if (id != product.Id)
+        if (id != product.Id) return NotFound();
+
+        if (!ModelState.IsValid)
+            return View(await _viewModelFactory.CreateProductViewModel(product));
+
+
+        product.ImageUrl = await _viewModelFactory.GetImageUrlAsync(imageUrl, image);
+
+
+        var UpdatedProduct = await _productService.UpdateProductViewModelAsync(product); 
+
+
+        if (UpdatedProduct is null)
         {
-            return NotFound();
+            TempData["Error"] = "Failed to update product.";
+            return View(await _viewModelFactory.CreateProductViewModel(product));
         }
+        
+        return RedirectToAction(nameof(Index));
 
-        if (ModelState.IsValid)
-        {
-            try
-            {
-                if (image != null)
-                {
-                    var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
-                    if (!Directory.Exists(uploadsFolder))
-                    {
-                        Directory.CreateDirectory(uploadsFolder);
-                    }
-
-                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await image.CopyToAsync(fileStream);
-                    }
-
-                    product.ImageUrl = "/uploads/" + uniqueFileName;
-                }
-
-                _context.Update(product);
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProductExists(product.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            return RedirectToAction(nameof(Index));
-        }
-
-        var categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-        ViewBag.Categories = new SelectList(categories, "Id", "Name");
-        return View(product);
     }
+    #endregion
 
-    // GET: Products/Delete/5
+
+    #region GET: Products/Delete/5
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null)
@@ -144,34 +109,33 @@ public class ProductsController : Controller
             return NotFound();
         }
 
-        var product = await _context.Products
-            .Include(p => p.Category)
-            .FirstOrDefaultAsync(m => m.Id == id);
-        if (product == null)
+        var productViewModel = await _productService.GetProductViewModelWithIdAsync(id);
+
+        if (productViewModel == null)
         {
             return NotFound();
         }
 
-        return View(product);
+        return View(productViewModel);
     }
+    #endregion
 
-    // POST: Products/Delete/5
+
+    #region POST: Products/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var product = await _context.Products.FindAsync(id);
-        if (product != null)
-        {
-            _context.Products.Remove(product);
-        }
+        bool deleted = await _productService.DeleteProductViewModelAsync(id);
 
-        await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
-    }
+        if (deleted)
+            return RedirectToAction(nameof(Index));
 
-    private bool ProductExists(int id)
-    {
-        return _context.Products.Any(e => e.Id == id);
+        var product = await _productService.GetProductViewModelWithIdAsync(id);
+        if (product == null) return NotFound();
+
+        TempData["Error"] = "Unable to delete product, already have transaction.";
+        return View(product);
     }
+    #endregion
 }
