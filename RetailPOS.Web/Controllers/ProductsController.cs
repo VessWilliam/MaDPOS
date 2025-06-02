@@ -76,20 +76,9 @@ public class ProductsController : Controller
     // GET: Products/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
-        var product = await _context.Products.FindAsync(id);
-        if (product == null)
-        {
-            return NotFound();
-        }
-
-        var categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-        ViewBag.Categories = new SelectList(categories, "Id", "Name");
-        return View(product);
+        if (id == null) return NotFound();
+        var product = await _productService.GetProductViewModelWithIdAsync(id);
+        return (product is null) ? NotFound() : View(await _viewModelFactory.CreateProductViewModel(product));
     }
 
     // POST: Products/Edit/5
