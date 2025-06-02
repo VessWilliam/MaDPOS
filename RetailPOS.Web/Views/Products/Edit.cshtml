@@ -4,9 +4,9 @@
     ViewData["Title"] = "Edit Product";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
+<div class="container mt-1">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">
@@ -15,50 +15,50 @@
                 </div>
                 <div class="card-body">
                     <form asp-action="Edit" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-1"></div>
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="ImageUrl" />
 
-                        <div class="mb-3">
-                            <label asp-for="Name" class="form-label"></label>
-                            <input asp-for="Name" class="form-control" />
+                        <div class="mb-2">
+                            <input asp-for="Name" class="form-control" placeholder="Product Name" />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Description" class="form-label"></label>
-                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <div class="mb-2">
+                            <textarea asp-for="Description" class="form-control" rows="2" placeholder="Description"></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Price" class="form-label"></label>
+                        <div class="mb-2">
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <input asp-for="Price" class="form-control" />
+                                <input asp-for="Price" class="form-control" placeholder="Price" />
                             </div>
                             <span asp-validation-for="Price" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="StockQuantity" class="form-label"></label>
-                            <input asp-for="StockQuantity" class="form-control" />
-                            <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <input asp-for="StockQuantity" class="form-control" placeholder="Stock Quantity" />
+                                <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <select asp-for="CategoryId" 
+                                class="form-select bg-dark text-light">
+                                    <option value=""> Select Category </option>
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger"></span>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="CategoryId" class="form-label">Category</label>
-                            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
-                                <option value="">-- Select Category --</option>
-                            </select>
-                            <span asp-validation-for="CategoryId" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
+                        <div class="mb-1">
                             <label class="form-label">Current Image</label>
-                            <div class="mb-2">
+                            <div class="mb-1">
                                 <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/placeholder.png" : Model.ImageUrl)"
-                                     alt="@Model.Name" class="img-thumbnail" style="max-height: 200px;" />
+                                     alt="@Model.Name"
+                                     class="img-thumbnail w-100"
+                                     style="max-height: 150px; object-fit: cover;" />
                             </div>
                             <label class="form-label">New Product Image</label>
                             <input type="file" name="imageFile" class="form-control" accept="image/*" />
@@ -81,5 +81,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

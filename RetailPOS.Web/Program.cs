@@ -33,6 +33,7 @@ builder.Services.AddScoped<PriceCrawlerService>();
 builder.Services.AddScoped<IViewModelFactory, ViewModelFactory>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();    
+builder.Services.AddScoped<IProductService, ProductService>();    
 
 //Repositories
 builder.Services.AddTransient(typeof(IRepository<>), typeof(Respository<>));

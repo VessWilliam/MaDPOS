@@ -18,52 +18,38 @@ public class ProductsController : Controller
     private readonly ILogger<ProductsController> _logger;
     private readonly IViewModelFactory _viewModelFactory;
     private readonly ICreateProductRepo _createProductRepo;
- 
+    private readonly IProductService _productService;
+
 
     public ProductsController(ApplicationDbContext context,
         IWebHostEnvironment environment,
         ILogger<ProductsController> logger,
         IViewModelFactory viewModelFactory,
-        ICreateProductRepo createProductRepo)
+        ICreateProductRepo createProductRepo,
+        IProductService productService)
     {
         _context = context;
         _environment = environment;
         _logger = logger;
         _viewModelFactory = viewModelFactory;
-        _createProductRepo = createProductRepo; 
+        _createProductRepo = createProductRepo;
+        _productService = productService;
     }
 
     // GET: Products
-    public async Task<IActionResult> Index()
-    {
-        var products = await _context.Products
-            .Include(p => p.Category)
-            .OrderBy(p => p.Name)
-            .ToListAsync();
-        return View(products);
-    }
+    public async Task<IActionResult> Index() => View(await _productService.GetProductViewModelListsAsync());
+    
 
     // GET: Products/Details/5
     public async Task<IActionResult> Details(int? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
-        var product = await _context.Products
-            .Include(p => p.Category)
-            .FirstOrDefaultAsync(m => m.Id == id);
-        if (product == null)
-        {
-            return NotFound();
-        }
-
-        return View(product);
+        if (id is null) return NotFound();
+        var product = await _productService.GetProductViewModelWithIdAsync(id);
+        return product is null ? NotFound() : View( _viewModelFactory.CreateProductViewModel(product));
     }
 
     // GET: Products/Create
-    public async Task<IActionResult> Create()  => View(await _viewModelFactory.CreateProductViewModel());
+    public async Task<IActionResult> Create() => View(await _viewModelFactory.CreateProductViewModel());
 
 
     // POST: Products/Create
@@ -72,9 +58,9 @@ public class ProductsController : Controller
     public async Task<IActionResult> Create(ProductViewModel product, string? imageUrl, IFormFile? image)
     {
         if (!ModelState.IsValid) return View(await _viewModelFactory.CreateProductViewModel(product));
-        
+
         product.ImageUrl = await _viewModelFactory.GetImageUrlAsync(imageUrl, image);
-        
+
         var createdProduct = await _createProductRepo.CreateProductAsync(product);
 
         if (createdProduct is null)
