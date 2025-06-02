@@ -8,4 +8,9 @@ public interface IProductService
 
     Task<ProductViewModel?> GetProductViewModelWithIdAsync(int? id);
 
+    Task<ProductViewModel?> UpdateProductViewModelAsync(ProductViewModel model);
+
+    Task<ProductViewModel?> CreateProductViewModelAsync(ProductViewModel model);
+
+    Task<bool> DeleteProductViewModelAsync(int id);
 }
