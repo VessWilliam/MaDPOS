@@ -23,6 +23,12 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     .EnableDetailedErrors()
     .EnableSensitiveDataLogging(false));
 
+// Add Redis Exchnage
+builder.Services.AddStackExchangeRedisCache(opt =>
+{
+    opt.Configuration = builder.Configuration.GetConnectionString("Redis");
+    opt.InstanceName = "RetailPOS:"; 
+});
 
 // Add Dapper Read 
 builder.Services.AddScoped<IDapperBaseService, DapperBaseService>();
@@ -33,7 +39,8 @@ builder.Services.AddScoped<PriceCrawlerService>();
 builder.Services.AddScoped<IViewModelFactory, ViewModelFactory>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();    
-builder.Services.AddScoped<IProductService, ProductService>();    
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 
 //Repositories
 builder.Services.AddTransient(typeof(IRepository<>), typeof(Respository<>));
@@ -92,7 +99,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Client}/{action=Index}/{id?}");
 
 
 // Seed the database

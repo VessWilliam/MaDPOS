@@ -32,6 +32,10 @@ body {
     line-height: 60px;
     background-color: #121212;
 }
+.card-img-top {
+    height: 200px;
+    object-fit: cover; 
+}
 
 .card {
     border: none;
