@@ -1,0 +1,45 @@
+﻿@model IEnumerable<RetailPOS.Web.Models.ViewModel.ProductViewModel>
+
+@{
+    ViewData["Title"] = "Shop Page";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">🛍️ Shop</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+        @foreach (var product in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="@product.ImageUrl" alt="@product.Name" class="card-img-top img-fluid" />
+                    <div class="card-body">
+                        <h5 class="card-title text-capitalize text-center">@product.Name</h5>
+                        <div>
+                           <p class="card-text mb-2 text-lg-center text-wrap">@product.Description</p>
+                        </div>
+                        <div class="row">
+                            <label class="col-4 col-form-label text-muted">In Stock</label>
+                            <div class="col-5 ms-3 mt-2">
+                                <p class="card-text"><strong>@product.StockQuantity</strong></p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <label class="col-4  col-form-label text-muted">Price</label>
+                            <div class="col-5 ms-3 mt-3">
+                                <p class="card-text"><strong>@product.Price.ToString("C")</strong></p>
+                            </div>
+                        </div>
+
+                    </div>
+                    <form asp-controller="Client" asp-action="AddToCart" method="post">
+                        <input type="hidden" name="id" value="@product.Id" />
+                        <button type="submit" class="btn btn-success w-100">Add to Cart</button>
+                    </form>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

@@ -1,4 +1,4 @@
-@model RetailPOS.Web.Models.Product
+@model RetailPOS.Web.Models.ViewModel.ProductViewModel
 
 @{
     ViewData["Title"] = "Product Details";
@@ -23,7 +23,7 @@
                 <dd class="col-sm-9">@Model.StockQuantity</dd>
 
                 <dt class="col-sm-3">Category</dt>
-                <dd class="col-sm-9">@(Model.Category?.Name ?? "Uncategorized")</dd>
+                <dd class="col-sm-9">@(Model.CategoryName ?? "Uncategorized")</dd>
 
                 @if (!string.IsNullOrEmpty(Model.ImageUrl))
                 {

@@ -92,7 +92,7 @@ public class AccountController : Controller
            ? "You have been logged out successfully."
            : "There was a problem logging you out. Please try again.";
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Index", "Client");
     }
 
 }

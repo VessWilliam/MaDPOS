@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using RetailPOS.Web.Services.IService;
 using RetailPOS.Web.Models.ViewModel;
 using RetailPOS.Web.Repositories.IRepository;
+using Microsoft.EntityFrameworkCore;
 
 namespace RetailPOS.Web.Controllers;
 
@@ -30,7 +31,7 @@ public class ProductsController : Controller
     {
         if (id is null) return NotFound();
         var product = await _productService.GetProductViewModelWithIdAsync(id);
-        return product is null ? NotFound() : View( _viewModelFactory.CreateProductViewModel(product));
+        return product is null ? NotFound() : View( await _viewModelFactory.CreateProductViewModel(product));
     }
     #endregion
 
@@ -138,4 +139,7 @@ public class ProductsController : Controller
         return View(product);
     }
     #endregion
+
+
+
 }
