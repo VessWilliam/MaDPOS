@@ -3,6 +3,7 @@ using RetailPOS.Web.Data;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Models.ViewModel;
 using RetailPOS.Web.Services.IService;
+using RetailPOS.Web.Views.Utility;
 
 namespace RetailPOS.Web.Controllers;
 
@@ -25,7 +26,7 @@ public class ClientController : Controller
 
     public async Task<IActionResult> Cart()
     {
-        var cart = await _redisCacheService.GetData<List<CartItem>>(nameof(Cart)) ?? new();
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(Cart)) ?? new();
         return View(cart);
     }
 
@@ -35,7 +36,7 @@ public class ClientController : Controller
         var product = await _productService.GetProductViewModelWithIdAsync(id);
         if (product is null) return NotFound();
 
-        var cart = await _redisCacheService.GetData<List<CartItem>>(nameof(Cart)) ?? new();
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(Cart)) ?? new();
 
         var item = cart.FirstOrDefault(c => c.ProductId == id);
         if (item != null)
@@ -44,7 +45,7 @@ public class ClientController : Controller
         }
         else
         {
-            cart.Add(new CartItem
+            cart.Add(new CartItemViewModel
             {
                 ProductId = product.Id,
                 ProductName = product.Name,
@@ -62,7 +63,7 @@ public class ClientController : Controller
     public async Task<IActionResult> UpdateCart(int ProductId, int Quantity)
     {
         
-        var cart = await _redisCacheService.GetData<List<CartItem>>(nameof(Cart)) ?? new();        
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(Cart)) ?? new();        
 
 
         var item =  cart.FirstOrDefault(c => c.ProductId == ProductId);
@@ -88,7 +89,7 @@ public class ClientController : Controller
     [HttpPost]
     public async Task<IActionResult> RemoveCart(int ProductId)
     {
-        var cart = await _redisCacheService.GetData<List<CartItem>>(nameof(Cart)) ?? new();
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(Cart)) ?? new();
 
         var item = cart.FirstOrDefault(c => c.ProductId == ProductId);
         if (item is not null)
@@ -102,5 +103,62 @@ public class ClientController : Controller
     }
 
 
-   
+    [HttpGet]
+    public async Task<IActionResult> Checkout()
+    {
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(Cart)) ?? new();
+
+        var viewModel = new CheckoutViewModel
+        {
+            CartItems = cart
+        };
+
+        return View(viewModel);
+    }
+
+
+    [HttpPost]
+    public async Task<IActionResult> Checkout()
+    {
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(Cart));
+        if (cart is null || !cart.Any()) return RedirectToAction(nameof(Cart));
+        
+
+        // Validate stock availability
+        foreach (var item in cart)
+        {
+            var product = await _context.Products.FindAsync(item.ProductId);
+            if (product is null || product.StockQuantity < item.Quantity)
+            {
+                ModelState.AddModelError("", $"Product '{product?.Name ?? "Unknown"}' does not have enough stock.");
+                return RedirectToAction(nameof(Cart));
+            }
+        }
+
+        var sale = new SalesTransaction
+        {
+            TransactionDate = DateTime.UtcNow,
+            Status = nameof(StatusEnum.PENDING),
+            Items = cart.Select(c => new SalesTransactionItem
+            {
+                ProductId = c.ProductId,
+                Quantity = c.Quantity,
+                UnitPrice = c.Price,
+                TotalPrice = c.Quantity * c.Price,
+            }).ToList(),
+            TotalAmount = cart.Sum(c => c.Price * c.Quantity)
+        };
+
+        await _context.SalesTransactions.AddAsync(sale);
+
+        await _context.SaveChangesAsync();
+
+        // Clear cart
+        await _redisCacheService.SetData(nameof(Cart), new List<CartItemViewModel>(), TimeSpan.FromMinutes(30));
+
+        // Redirect to order confirmation page
+        return RedirectToAction(nameof(Cart));
+    }
+
+
 }

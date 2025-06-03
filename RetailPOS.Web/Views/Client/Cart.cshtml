@@ -1,4 +1,4 @@
-﻿@model IEnumerable<RetailPOS.Web.Models.ViewModel.CartItem>
+﻿@model IEnumerable<RetailPOS.Web.Models.ViewModel.CartItemViewModel>
 @{
     ViewData["Title"] = "Your Cart";
 }
@@ -54,7 +54,9 @@
             </tbody>
         </table>
 
-        <a class="btn btn-primary" asp-action="Checkout">Proceed to Checkout</a>
+        <form asp-action="Checkout" method="post">
+            <button type="submit" class="btn btn-primary">Proceed to Checkout</button>
+        </form>
     }
 </div>
 

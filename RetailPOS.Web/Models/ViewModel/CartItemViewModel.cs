@@ -1,6 +1,6 @@
 ﻿namespace RetailPOS.Web.Models.ViewModel;
 
-public class CartItem
+public class CartItemViewModel
 {
     public int ProductId { get; set; }
     public string ProductName { get; set; } = string.Empty;
