@@ -5,10 +5,11 @@ using RetailPOS.Web.Data;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Services.IService;
 using RetailPOS.Web.Models.ViewModel;
+using RetailPOS.Web.Utility;
 
 namespace RetailPOS.Web.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = $"{UserRoleConstant.Admin},{UserRoleConstant.Manager}, {UserRoleConstant.Cashier}")]
     public class CheckoutController : Controller
     {
         private readonly ApplicationDbContext _context;

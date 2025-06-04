@@ -4,10 +4,12 @@ using RetailPOS.Web.Services.IService;
 using RetailPOS.Web.Models.ViewModel;
 using RetailPOS.Web.Repositories.IRepository;
 using Microsoft.EntityFrameworkCore;
+using RetailPOS.Web.Utility;
 
 namespace RetailPOS.Web.Controllers;
 
-[Authorize]
+
+[Authorize(Roles = $"{UserRoleConstant.Admin},{UserRoleConstant.Manager}")]
 public class ProductsController : Controller
 {
     private readonly IViewModelFactory _viewModelFactory;

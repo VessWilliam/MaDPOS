@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RetailPOS.Web.Data;
-using RetailPOS.Web.Models;
 using RetailPOS.Web.Models.ViewModel;
 using RetailPOS.Web.Services.IService;
-using RetailPOS.Web.Views.Utility;
+using RetailPOS.Web.Utility;
 
 namespace RetailPOS.Web.Controllers;
 
@@ -11,18 +10,30 @@ public class ClientController : Controller
 {
 
     private readonly IProductService _productService;
-    private readonly IRedisCacheService _redisCacheService; 
+    private readonly IRedisCacheService _redisCacheService;
     private readonly ApplicationDbContext _context;
-    public ClientController(IProductService productService, 
-        ApplicationDbContext context, 
+    public ClientController(IProductService productService,
+        ApplicationDbContext context,
         IRedisCacheService redisCacheService)
     {
         _productService = productService;
         _context = context;
-        _redisCacheService = redisCacheService;     
+        _redisCacheService = redisCacheService;
     }
 
-    public async Task<IActionResult> Index() => View(await _productService.GetProductViewModelListsAsync());
+    public async Task<IActionResult> Index()
+    {
+        if (User.Identity!.IsAuthenticated)
+        {
+            if (User.IsInRole(nameof(UserRoleConstant.Cashier))
+                || User.IsInRole(nameof(UserRoleConstant.Manager)))
+            {
+                return RedirectToAction(nameof(Index), "Home");
+            }
+        }
+
+        return View(await _productService.GetProductViewModelListsAsync());
+    }
 
     public async Task<IActionResult> Cart()
     {
@@ -62,16 +73,16 @@ public class ClientController : Controller
     [HttpPost]
     public async Task<IActionResult> UpdateCart(int ProductId, int Quantity)
     {
-        
-        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(CartItemViewModel)) ?? new();        
+
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(CartItemViewModel)) ?? new();
 
 
-        var item =  cart.FirstOrDefault(c => c.ProductId == ProductId);
+        var item = cart.FirstOrDefault(c => c.ProductId == ProductId);
         if (item is not null)
         {
             if (Quantity <= 0)
             {
-                cart.Remove(item); // Op
+                cart.Remove(item);
             }
             else
             {
@@ -118,8 +129,8 @@ public class ClientController : Controller
 
 
     [HttpPost]
-    public IActionResult ProceedToCheckout() =>  RedirectToAction("Index", "Checkout");
-    
+    public IActionResult ProceedToCheckout() => RedirectToAction("Index", "Checkout");
+
 
 
 }

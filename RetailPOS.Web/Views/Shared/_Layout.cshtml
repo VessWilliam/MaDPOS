@@ -32,39 +32,44 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav">
-
                         @if (isAuth)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Products" asp-action="Index">Products</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Categories" asp-action="Index">Categories</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Sales" asp-action="Index">Sales</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Sales" asp-action="Report">Reports</a>
-                            </li>
+                            if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Home" asp-action="Index">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Products" asp-action="Index">Products</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Categories" asp-action="Index">Categories</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Sales" asp-action="Report">Reports</a>
+                                </li>
+                            }
+
+                            if (User.IsInRole("Cashier"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Sales" asp-action="Index">Sales</a>
+                                </li>
+                            }
                         }
                     </ul>
-                    <ul class="navbar-nav">
 
+                    <ul class="navbar-nav">
                         @if (isAuth)
                         {
                             <li class="nav-item border border-light rounded-pill px-3 ps-3">
-                                <span class="nav-link text-muted">Hello, <span class="text-info">@User.Identity?.Name</span> </span>
+                                <span class="nav-link text-muted">Hello, <span class="text-info">@User.Identity?.Name</span></span>
                             </li>
-
 
                             @if (User.IsInRole("Admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-warning px-3" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                                    <a class="nav-link text-warning px-3" asp-controller="Account" asp-action="Register">Register</a>
                                 </li>
                             }
 
@@ -77,14 +82,13 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="Client" asp-action="Cart"><i class="bi bi-cart"></i></a>
+                                <a class="nav-link text-white" asp-controller="Client" asp-action="Cart">
+                                    <i class="bi bi-cart"></i>
+                                </a>
                             </li>
-
-
                             <li class="nav-item">
-                                <a class="nav-link text-warning px-3" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                                <a class="nav-link text-warning px-3" asp-controller="Account" asp-action="Login">Login</a>
                             </li>
-
                         }
                     </ul>
                 </div>

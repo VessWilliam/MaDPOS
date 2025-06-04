@@ -33,16 +33,33 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Quick Actions</h5>
+                    @{
+                        var isAuth = User.Identity?.IsAuthenticated ?? false;
+                    }
                     <div class="list-group">
-                        <a asp-controller="Checkout" asp-action="Index" class="list-group-item list-group-item-action">
-                            <i class="fas fa-cash-register"></i> New Sale
-                        </a>
-                        <a asp-controller="Products" asp-action="Index" class="list-group-item list-group-item-action">
-                            <i class="fas fa-box"></i> Manage Products
-                        </a>
-                        <a asp-controller="Sales" asp-action="Index" class="list-group-item list-group-item-action">
-                            <i class="fas fa-history"></i> View Sales History
-                        </a>
+                          @if (isAuth)
+                          {       
+                              @if (User.IsInRole("Cashier"))
+                             {
+                                <a asp-controller="Checkout" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-cash-register"></i> New Sale
+                                </a>
+                             }
+                            
+                     
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {
+                                <a asp-controller="Checkout" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-cash-register"></i> New Sale
+                                </a>
+                                <a asp-controller="Products" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-box"></i> Manage Products
+                                </a>
+                                <a asp-controller="Sales" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-history"></i> View Sales History
+                                </a>
+                            }
+                        }
                     </div>
                 </div>
             </div>
