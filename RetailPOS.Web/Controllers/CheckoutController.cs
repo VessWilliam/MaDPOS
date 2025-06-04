@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using RetailPOS.Web.Data;
 using RetailPOS.Web.Models;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using RetailPOS.Web.Services.IService;
+using RetailPOS.Web.Models.ViewModel;
 
 namespace RetailPOS.Web.Controllers
 {
@@ -13,10 +12,15 @@ namespace RetailPOS.Web.Controllers
     public class CheckoutController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IViewModelFactory _viewModelFactory;   
+        private readonly IRedisCacheService _redisCacheService; 
 
-        public CheckoutController(ApplicationDbContext context)
+        public CheckoutController(ApplicationDbContext context,  IViewModelFactory viewModelFactory, 
+            IRedisCacheService redisCacheService)
         {
             _context = context;
+            _viewModelFactory = viewModelFactory;
+            _redisCacheService = redisCacheService; 
         }
 
         // GET: Checkout
@@ -26,15 +30,32 @@ namespace RetailPOS.Web.Controllers
                 .Include(p => p.Category)
                 .Where(p => p.StockQuantity > 0)
                 .OrderBy(p => p.Name)
-                .ToListAsync();
+                .Select(p => new ProductViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Price = p.Price,
+                    StockQuantity = p.StockQuantity,
+                    ImageUrl = p.ImageUrl
+                })
+            .ToListAsync();
 
-            return View(products);
+            var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(CartItemViewModel)) ?? new();
+
+            var model = new CheckoutViewModel
+            {
+                Products = products,
+                CartItems = cart
+            };
+
+            return View(model);
         }
+
 
         // POST: Checkout/Process
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Process(CheckoutViewModel model)
+        public async Task<IActionResult> Process([FromBody] CheckoutViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -74,7 +95,7 @@ namespace RetailPOS.Web.Controllers
             _context.SalesTransactions.Add(transaction);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Receipt), new { id = transaction.Id });
+            return Json(new { redirectUrl = Url.Action(nameof(Receipt), new { id = transaction.Id }) });
         }
 
         // GET: Checkout/Receipt/5
@@ -99,14 +120,7 @@ namespace RetailPOS.Web.Controllers
         }
     }
 
-    public class CheckoutViewModel
-    {
-        public List<CheckoutItem> Items { get; set; } = new List<CheckoutItem>();
-    }
 
-    public class CheckoutItem
-    {
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
-    }
+
+  
 }

@@ -1,8 +1,13 @@
-@model IEnumerable<RetailPOS.Web.Models.Product>
+@using RetailPOS.Web.Models.ViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@model RetailPOS.Web.Models.ViewModel.CheckoutViewModel
 
 @{
     ViewData["Title"] = "Checkout";
 }
+
+<!-- Hidden Anti-Forgery Token for AJAX -->
+<input type="hidden" id="antiForgeryToken" name="__RequestVerificationToken" value="@Antiforgery.GetTokens(ViewContext.HttpContext).RequestToken" />
 
 <div class="container mt-4">
     <div class="row">
@@ -23,7 +28,7 @@
                                 <label class="form-label">Add Product</label>
                                 <select id="productSelect" class="form-select">
                                     <option value="">-- Select Product --</option>
-                                    @foreach (var product in ViewBag.Products)
+                                    @foreach (var product in Model.Products)
                                     {
                                         <option value="@product.Id"
                                                 data-price="@product.Price"
@@ -49,7 +54,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="table-responsive mb-4">
                         <table class="table" id="itemsTable">
                             <thead>
@@ -62,17 +66,29 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Items will be added here dynamically -->
+                                @foreach (var item in Model.CartItems)
+                                {
+                                    <tr>
+                                        <td>@item.ProductName</td>
+                                        <td>@item.Price.ToString("C")</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@((item.Price * item.Quantity).ToString("C"))</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-item" data-id="@item.ProductId">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                                    <td colspan="2"><strong id="totalAmount">$0.00</strong></td>
+                                    <td colspan="2"><strong id="totalAmount">@Model.CartItems.Sum(item => item.Price * item.Quantity).ToString("C")</strong></td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
-
                     <div class="d-grid gap-2">
                         <button type="button" class="btn btn-success" id="completeSale">
                             <i class="bi bi-check-circle me-2"></i>Complete Sale
@@ -85,9 +101,12 @@
 </div>
 
 @section Scripts {
+    @{
+        var cartItemsJson = Newtonsoft.Json.JsonConvert.SerializeObject(Model.CartItems ?? new List<CartItemViewModel>());
+    }
     <script>
         $(document).ready(function () {
-            let items = [];
+            let items = @Html.Raw(cartItemsJson);
 
             $('#addItem').click(function () {
                 const productSelect = $('#productSelect');
@@ -127,20 +146,21 @@
                 tbody.empty();
 
                 let total = 0;
+
                 items.forEach((item, index) => {
                     tbody.append(`
-                        <tr>
-                            <td>${item.productName}</td>
-                            <td>$${item.price.toFixed(2)}</td>
-                            <td>${item.quantity}</td>
-                            <td>$${item.total.toFixed(2)}</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-outline-danger remove-item" data-index="${index}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `);
+                                <tr>
+                                    <td>${item.productName}</td>
+                                    <td>$${item.price.toFixed(2)}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>$${item.total.toFixed(2)}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-item" data-index="${index}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `);
                     total += item.total;
                 });
 
@@ -164,15 +184,20 @@
                     return;
                 }
 
+                const token = $('#antiForgeryToken').val();
+
                 $.ajax({
                     url: '@Url.Action("Process", "Checkout")',
                     type: 'POST',
                     contentType: 'application/json',
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
                     data: JSON.stringify({ items: items }),
                     success: function (response) {
-                        window.location.href = response;
+                        window.location.href = response.redirectUrl;
                     },
-                    error: function (xhr) {
+                    error: function () {
                         alert('An error occurred while processing your sale. Please try again.');
                     }
                 });

@@ -30,7 +30,7 @@
                         <td><img src="@item.imageUrl" width="80" height="60" style="object-fit" /></td>
                         <td class="text-white pt-4">@item.ProductName</td>
                         <td class="text-white pt-4">@item.Price.ToString("C")</td>
-                        <td class=" text-white pt-4">@((item.Price * item.Quantity).ToString("c")) </td>
+                        <td class=" text-white pt-4">@((item.Price * item.Quantity).ToString("C")) </td>
 
                         <td class="align-middle">
                         <form asp-action="UpdateCart" method="post" class="d-flex align-items-center gap-2">
@@ -54,7 +54,7 @@
             </tbody>
         </table>
 
-        <form asp-action="Checkout" method="post">
+        <form asp-action="ProceedToCheckout" method="post">
             <button type="submit" class="btn btn-primary">Proceed to Checkout</button>
         </form>
     }
