@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using RetailPOS.Web.Data;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Utility;
 using RetailPOS.Web.Services.IService;
@@ -11,20 +9,16 @@ namespace RetailPOS.Web.Controllers;
 [Authorize(Roles = $"{UserRoleConstant.Admin},{UserRoleConstant.Manager}")]
 public class CategoryController : Controller
 {
-    private readonly ApplicationDbContext _context;
+   
     private readonly ICategoryService _categoryService;
 
-    public CategoryController(ApplicationDbContext context, ICategoryService categoryService)
-    {
-        _context = context;
-        _categoryService = categoryService;
-    }
+    public CategoryController(ICategoryService categoryService) => _categoryService = categoryService;
+    
 
     #region GET: Category
     public async Task<IActionResult> Index() =>
         View(await _categoryService.GetCategoriesWithProductsAsync());
     #endregion
-
 
 
     #region GET: Category/Details/5
@@ -40,12 +34,9 @@ public class CategoryController : Controller
     #endregion
 
 
-
     #region GET: Category/Create
     public IActionResult Create() => View();
     #endregion
-
-
 
 
     #region POST: Category/Create
@@ -62,7 +53,6 @@ public class CategoryController : Controller
     #endregion
 
 
-
     #region GET: Category/Edit/5
     public async Task<IActionResult> Edit(int id)
     {
@@ -73,6 +63,7 @@ public class CategoryController : Controller
         return category is null ? NotFound() : View(category);
     }
     #endregion
+
 
     #region POST: Category/Edit/5
     [HttpPost]
@@ -89,6 +80,7 @@ public class CategoryController : Controller
     }
     #endregion
 
+
     #region GET: Category/Delete/5
     public async Task<IActionResult> Delete(int id)
     {
@@ -100,6 +92,7 @@ public class CategoryController : Controller
        
     }
     #endregion
+
 
     #region POST: Category/Delete/5
     [HttpPost, ActionName("Delete")]
