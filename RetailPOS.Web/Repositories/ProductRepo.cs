@@ -133,4 +133,33 @@ public class ProductRepo : Respository<Product>, IProductRepo
             return Enumerable.Empty<Product>();
         }
     }
+
+    public async Task<IEnumerable<Product>> GetCheckOutProductListAsync()
+    {
+        try
+        {
+            var query = @"
+            SELECT 
+                p.""Id"",
+                p.""Name"",
+                p.""Price"",
+                p.""StockQuantity"",
+                p.""ImageUrl""
+            FROM ""Products"" p
+            INNER JOIN ""Categories"" c ON p.""CategoryId"" = c.""Id""
+            WHERE p.""StockQuantity"" > 0
+            ORDER BY p.""Name"" ASC;
+            ";
+
+            return await _dapperBaseService.getDBConnectionAsync(async connection =>
+                await connection.QueryAsync<Product>(query));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving checkout product list");
+            return Enumerable.Empty<Product>();
+        }
+
+    }
 }
+

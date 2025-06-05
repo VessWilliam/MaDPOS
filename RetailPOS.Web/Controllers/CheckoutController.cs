@@ -6,6 +6,8 @@ using RetailPOS.Web.Models;
 using RetailPOS.Web.Services.IService;
 using RetailPOS.Web.Models.ViewModel;
 using RetailPOS.Web.Utility;
+using RetailPOS.Web.Repositories.IRepository;
+using Mapster;
 
 namespace RetailPOS.Web.Controllers
 {
@@ -15,11 +17,13 @@ namespace RetailPOS.Web.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IViewModelFactory _viewModelFactory;   
         private readonly IRedisCacheService _redisCacheService; 
+        private readonly IProductService _productService;
 
-        public CheckoutController(ApplicationDbContext context,  IViewModelFactory viewModelFactory, 
+        public CheckoutController(ApplicationDbContext context, IProductService productService,  IViewModelFactory viewModelFactory, 
             IRedisCacheService redisCacheService)
         {
             _context = context;
+            _productService = productService;
             _viewModelFactory = viewModelFactory;
             _redisCacheService = redisCacheService; 
         }
@@ -27,25 +31,13 @@ namespace RetailPOS.Web.Controllers
         // GET: Checkout
         public async Task<IActionResult> Index()
         {
-            var products = await _context.Products
-                .Include(p => p.Category)
-                .Where(p => p.StockQuantity > 0)
-                .OrderBy(p => p.Name)
-                .Select(p => new ProductViewModel
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price,
-                    StockQuantity = p.StockQuantity,
-                    ImageUrl = p.ImageUrl
-                })
-            .ToListAsync();
+            var products =  await _productService.GetCheckOutProductListAsync();
 
             var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(CartItemViewModel)) ?? new();
 
             var model = new CheckoutViewModel
             {
-                Products = products,
+                Products = products.Adapt<List<ProductViewModel>>(),
                 CartItems = cart
             };
 

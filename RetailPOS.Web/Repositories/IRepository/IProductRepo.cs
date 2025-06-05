@@ -1,5 +1,4 @@
 ﻿using RetailPOS.Web.Models;
-using RetailPOS.Web.Models.ViewModel;
 
 namespace RetailPOS.Web.Repositories.IRepository;
 
@@ -13,5 +12,8 @@ public interface IProductRepo
 
   Task<Product?> GetProductViewModelWithIdAsync(int? id);
 
-    Task<IEnumerable<Product>> GetProductViewModelListsAsync();
+  Task<IEnumerable<Product>> GetProductViewModelListsAsync();
+
+  Task<IEnumerable<Product>> GetCheckOutProductListAsync();
+
 }

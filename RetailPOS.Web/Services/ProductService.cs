@@ -54,6 +54,22 @@ public class ProductService : IProductService
         }
     }
 
+    public async Task<IEnumerable<ProductViewModel>?> GetCheckOutProductListAsync()
+    {
+        try
+        {
+             
+            var result = await _productRepo.GetCheckOutProductListAsync();
+
+            return result.Adapt<IEnumerable<ProductViewModel>>();    
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving product list");
+            return Enumerable.Empty<ProductViewModel>();
+        }
+    }
+
     public async Task<IEnumerable<ProductViewModel>> GetProductViewModelListsAsync()
     {
         try
