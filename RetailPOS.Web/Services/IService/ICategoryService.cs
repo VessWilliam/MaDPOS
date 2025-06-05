@@ -9,4 +9,12 @@ public interface ICategoryService
     Task<Category?> UpdateCategoryAsync(Category model);
     Task<bool> DeleteCategoryAsync(int id);
     Task<Category?> GetCategoryByIdAsync(int id);
+
+
+
+    #region CategoryProduct
+    Task<IEnumerable<Category>> GetCategoriesWithProductsAsync();
+    Task<Category?> GetCategoryWithProductsByIdAsync(int id);
+    Task<(bool success, string error)> DeleteConfirmService(int id);
+    #endregion
 }

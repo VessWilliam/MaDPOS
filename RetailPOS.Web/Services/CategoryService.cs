@@ -39,31 +39,11 @@ public class CategoryService : ICategoryService
         }
     }
 
-    public async Task<bool> DeleteCategoryAsync(int id)
-    {
-        try
-        {
-            if (id is 0) return false;
-
-            var result = await _categoryRepo.DeleteCategoryAsync(id);
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error delete {nameof(Category)} with Id: {id}");
-            return false;
-        }
-    }
-
     public async Task<IEnumerable<Category>> GetCategoryAsync()
     {
         try
         {
-            var query = @" Select * From ""Categories"" Order By ""Id"" ASC";
-
-            return await _dapperBaseService.getDBConnectionAsync(async connection =>
-            await connection.QueryAsync<Category>(query));
+           return await _categoryRepo.GetCategoryAsync();
         }
         catch (Exception ex)
         {
@@ -76,10 +56,7 @@ public class CategoryService : ICategoryService
     {
         try
         {
-            var query = @"SELECT * FROM ""Categories"" WHERE ""Id"" = @Id";
-
-            return await _dapperBaseService.getDBConnectionAsync(async connection =>
-                await connection.QueryFirstOrDefaultAsync<Category>(query, new { Id = id }));
+           return await _categoryRepo.GetCategoryByIdAsync(id);
         }
         catch (Exception ex)
         {
@@ -106,4 +83,74 @@ public class CategoryService : ICategoryService
 
     }
 
+    public async Task<IEnumerable<Category>> GetCategoriesWithProductsAsync()
+    {
+        try
+        {
+            return await _categoryRepo.GetCategoriesWithProductsAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to get category with product");
+            return null;
+        }
+
+    }
+
+
+    public async Task<Category?> GetCategoryWithProductsByIdAsync(int id)
+    {
+        try
+        {
+            var result = await _categoryRepo.GetCategoryWithProductsByIdAsync(id);
+
+            return result is null ? null : result;  
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error getting category with id model: {id}");
+            return null;
+        }
+    }
+
+    public async Task<(bool success, string? error)> DeleteConfirmService(int id)
+    {
+        try
+        {
+            var category = await _categoryRepo.GetCategoryWithProductsByIdAsync(id);
+
+            if (category is null)
+                return (false, "Category not found");
+
+            if (category.Products.Any())
+                return (false, "Cannot delete category with associated products.");
+
+            var result = await _categoryRepo.DeleteCategoryAsync(category.Id);
+            return result ? (true, null) : (false, "Failed to delete category");
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error delete with product {nameof(Category)} with Id: {id}");
+            return (false, "Unexpected error occurred");
+        }
+    }
+
+    public async Task<bool> DeleteCategoryAsync(int id)
+    {
+        try
+        {
+            if (id is 0) return false;
+
+            var result = await _categoryRepo.DeleteCategoryAsync(id);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error delete {nameof(Category)} with Id: {id}");
+            return false;
+        }
+    }
 }
