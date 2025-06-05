@@ -45,6 +45,7 @@ builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 //Repositories
 builder.Services.AddTransient(typeof(IRepository<>), typeof(Respository<>));
 builder.Services.AddTransient<IProductRepo, ProductRepo>();
+builder.Services.AddTransient<ICategoryRepo, CategoryRepo>();
 
 
 //Add Seeder Database
