@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using RetailPOS.Web.Services.IService;
 using RetailPOS.Web.Models.ViewModel;
-using RetailPOS.Web.Repositories.IRepository;
-using Microsoft.EntityFrameworkCore;
 using RetailPOS.Web.Utility;
 
 namespace RetailPOS.Web.Controllers;
@@ -16,7 +14,6 @@ public class ProductsController : Controller
     private readonly IProductService _productService;
     public ProductsController(
         IViewModelFactory viewModelFactory,
-        IProductRepo productRepo,
         IProductService productService)
     {
         _viewModelFactory = viewModelFactory;
@@ -32,7 +29,9 @@ public class ProductsController : Controller
     public async Task<IActionResult> Details(int? id)
     {
         if (id is null) return NotFound();
+
         var product = await _productService.GetProductViewModelWithIdAsync(id);
+
         return product is null ? NotFound() : View( await _viewModelFactory.CreateProductViewModel(product));
     }
     #endregion
@@ -69,7 +68,9 @@ public class ProductsController : Controller
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
+
         var product = await _productService.GetProductViewModelWithIdAsync(id);
+
         return (product is null) ? NotFound() : View(await _viewModelFactory.CreateProductViewModel(product));
     }
     #endregion
