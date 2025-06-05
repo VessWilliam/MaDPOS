@@ -1,12 +1,10 @@
 ﻿using RetailPOS.Web.Models;
 
-namespace RetailPOS.Web.Services.IService;
+namespace RetailPOS.Web.Repositories.IRepository;
 
-public interface ICategoryService
+public interface ICategoryRepo
 {
-    Task<IEnumerable<Category>> GetCategoryAsync();
     Task<Category?> CreateCategoryAsync(Category model);
     Task<Category?> UpdateCategoryAsync(Category model);
     Task<bool> DeleteCategoryAsync(int id);
-    Task<Category?> GetCategoryByIdAsync(int id);
 }

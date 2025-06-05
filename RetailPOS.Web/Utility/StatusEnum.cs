@@ -1,4 +1,4 @@
-﻿namespace RetailPOS.Web.Views.Utility;
+﻿namespace RetailPOS.Web.Utility;
 
 public enum StatusEnum
 {
