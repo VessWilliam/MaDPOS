@@ -74,7 +74,7 @@ public class CategoryController : Controller
     }
     #endregion
 
-    // POST: Category/Edit/5
+    #region POST: Category/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description")] Category category)
@@ -87,8 +87,9 @@ public class CategoryController : Controller
         
         return RedirectToAction(nameof(Index));
     }
+    #endregion
 
-    // GET: Category/Delete/5
+    #region GET: Category/Delete/5
     public async Task<IActionResult> Delete(int id)
     {
         if (id is 0)  return NotFound();
@@ -98,32 +99,32 @@ public class CategoryController : Controller
         return category is null ? NotFound() :View(category);      
        
     }
+    #endregion
 
-    // POST: Category/Delete/5
+    #region POST: Category/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var category = await _context.Categories
-            .Include(c => c.Products)
-            .FirstOrDefaultAsync(c => c.Id == id);
+        var (success, error, category) = await _categoryService.DeleteConfirmAsync(id);
 
-        if (category is null)  return NotFound();
-        
-
-        if (category.Products.Any())
+        if (success)
         {
-            ModelState.AddModelError("", "Cannot delete category with associated products.");
+            TempData["Success"] = "Category deleted successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (error is "Category not found") return NotFound();
+
+        if (category is not null)
+        {
+            ModelState.AddModelError("", error ?? "An error occurred while deleting.");
             return View("Delete", category);
         }
 
-        _context.Categories.Remove(category);
-        await _context.SaveChangesAsync();
+        TempData["Error"] = error ?? "Unexpected error.";
         return RedirectToAction(nameof(Index));
     }
 
-    private bool CategoryExists(int id)
-    {
-        return _context.Categories.Any(e => e.Id == id);
-    }
+    #endregion
 }

@@ -15,6 +15,6 @@ public interface ICategoryService
     #region CategoryProduct
     Task<IEnumerable<Category>> GetCategoriesWithProductsAsync();
     Task<Category?> GetCategoryWithProductsByIdAsync(int id);
-    Task<(bool success, string error)> DeleteConfirmService(int id);
+    Task<(bool success, string? error, Category? category)> DeleteConfirmAsync(int id);
     #endregion
 }

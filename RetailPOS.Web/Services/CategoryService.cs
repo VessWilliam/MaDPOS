@@ -1,5 +1,4 @@
-﻿using Dapper;
-using RetailPOS.Web.Models;
+﻿using RetailPOS.Web.Models;
 using RetailPOS.Web.Repositories.IRepository;
 using RetailPOS.Web.Services.IService;
 
@@ -8,7 +7,6 @@ namespace RetailPOS.Web.Services;
 public class CategoryService : ICategoryService
 {
 
-    private readonly IDapperBaseService _dapperBaseService;
     private readonly ICategoryRepo _categoryRepo;
     private readonly ILogger _logger;
 
@@ -18,7 +16,6 @@ public class CategoryService : ICategoryService
         ILoggerFactory loggerFactory)
     {
         _logger = loggerFactory.CreateLogger<CategoryService>();
-        _dapperBaseService = dapperBaseService;
         _categoryRepo = categoryRepo;
     }
 
@@ -43,7 +40,7 @@ public class CategoryService : ICategoryService
     {
         try
         {
-           return await _categoryRepo.GetCategoryAsync();
+            return await _categoryRepo.GetCategoryAsync();
         }
         catch (Exception ex)
         {
@@ -56,7 +53,7 @@ public class CategoryService : ICategoryService
     {
         try
         {
-           return await _categoryRepo.GetCategoryByIdAsync(id);
+            return await _categoryRepo.GetCategoryByIdAsync(id);
         }
         catch (Exception ex)
         {
@@ -104,7 +101,7 @@ public class CategoryService : ICategoryService
         {
             var result = await _categoryRepo.GetCategoryWithProductsByIdAsync(id);
 
-            return result is null ? null : result;  
+            return result is null ? null : result;
 
         }
         catch (Exception ex)
@@ -114,26 +111,27 @@ public class CategoryService : ICategoryService
         }
     }
 
-    public async Task<(bool success, string? error)> DeleteConfirmService(int id)
+    public async Task<(bool success, string? error, Category? category)> DeleteConfirmAsync(int id)
     {
         try
         {
             var category = await _categoryRepo.GetCategoryWithProductsByIdAsync(id);
 
             if (category is null)
-                return (false, "Category not found");
+                return (false, "Category not found", null);
 
             if (category.Products.Any())
-                return (false, "Cannot delete category with associated products.");
+                return (false, "Cannot delete category with associated products.", category);
 
             var result = await _categoryRepo.DeleteCategoryAsync(category.Id);
-            return result ? (true, null) : (false, "Failed to delete category");
-
+            return result
+                ? (true, null, null)
+                : (false, "Failed to delete category", category);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error delete with product {nameof(Category)} with Id: {id}");
-            return (false, "Unexpected error occurred");
+            _logger.LogError(ex, $"Error deleting {nameof(Category)} with Id: {id}");
+            return (false, "Unexpected error occurred", null);
         }
     }
 

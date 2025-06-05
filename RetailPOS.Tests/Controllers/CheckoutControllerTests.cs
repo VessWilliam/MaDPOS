@@ -3,9 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RetailPOS.Web.Controllers;
 using RetailPOS.Web.Data;
 using RetailPOS.Web.Models;
-using System;
-using System.Threading.Tasks;
-using Xunit;
+using RetailPOS.Web.Models.ViewModel;
 
 namespace RetailPOS.Tests.Controllers
 {
@@ -55,9 +53,9 @@ namespace RetailPOS.Tests.Controllers
 
             var model = new CheckoutViewModel
             {
-                Items = new List<CheckoutItemViewModel>
+                Items = new List<CheckoutItem>
                 {
-                    new CheckoutItemViewModel { ProductId = product.Id, Quantity = 2 }
+                    new CheckoutViewModel{ ProductId = product.Id, Quantity = 2 }
                 }
             };
 
@@ -79,9 +77,9 @@ namespace RetailPOS.Tests.Controllers
 
             var model = new CheckoutViewModel
             {
-                Items = new List<CheckoutItemViewModel>
+                Items = new List<CheckoutViewModel>
                 {
-                    new CheckoutItemViewModel { ProductId = product.Id, Quantity = 2 }
+                    new CheckoutViewModel{ ProductId = product.Id, Quantity = 2 }
                 }
             };
 
