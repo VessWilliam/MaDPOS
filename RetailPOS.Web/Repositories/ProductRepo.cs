@@ -1,19 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dapper;
+using Microsoft.EntityFrameworkCore;
 using RetailPOS.Web.Data;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Repositories.IRepository;
+using RetailPOS.Web.Services.IService;
 
 namespace RetailPOS.Web.Repositories;
 
 public class ProductRepo : Respository<Product>, IProductRepo
 {
-
+    private readonly IDapperBaseService _dapperBaseService;
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     private ILogger<ProductRepo> _logger;
 
-    public ProductRepo(IDbContextFactory<ApplicationDbContext> contextFactory
+    public ProductRepo(IDapperBaseService dapperBaseService,
+           IDbContextFactory<ApplicationDbContext> contextFactory
         , ILoggerFactory loggerFactory) : base(contextFactory)
     {
+        _dapperBaseService = dapperBaseService;
         _contextFactory = contextFactory;
         _logger = loggerFactory.CreateLogger<ProductRepo>();
     }
@@ -65,6 +69,68 @@ public class ProductRepo : Respository<Product>, IProductRepo
         {
             _logger.LogError(ex, "Error deleting product");
             return false;
+        }
+    }
+
+    public async Task<Product?> GetProductViewModelWithIdAsync(int? id)
+    {
+
+        try
+        {
+            var param = new DynamicParameters();
+            param.Add("@id", id);
+
+            var query = @"
+            SELECT 
+                p.""Id"",
+                p.""Name"",
+                p.""Description"",
+                p.""Price"",
+                p.""StockQuantity"",
+                p.""ImageUrl"",
+                p.""CategoryId"",
+                c.""Name"" AS ""CategoryName""
+            FROM ""Products"" p
+            LEFT JOIN ""Categories"" c ON p.""CategoryId"" = c.""Id""
+            WHERE p.""Id"" = @id";
+
+            return await _dapperBaseService.getDBConnectionAsync(async connection =>
+                await connection.QueryFirstOrDefaultAsync<Product>(query, param)
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error retrieving product with id: {id}");
+            return null;
+        }
+    }
+
+    public async Task<IEnumerable<Product>> GetProductViewModelListsAsync()
+    {
+        try
+        {
+            var query = @"
+            SELECT  
+                p.""Id"", 
+                p.""Name"", 
+                p.""Description"", 
+                p.""Price"", 
+                p.""StockQuantity"", 
+                p.""ImageUrl"", 
+                p.""CategoryId"",
+                c.""Name"" AS ""CategoryName""
+            FROM ""Products"" p
+            LEFT JOIN ""Categories"" c ON p.""CategoryId"" = c.""Id""
+            ORDER BY p.""Name"" ASC;
+        ";
+
+            return await _dapperBaseService.getDBConnectionAsync(async connection =>
+                await connection.QueryAsync<Product>(query));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving product list");
+            return Enumerable.Empty<Product>();
         }
     }
 }

@@ -42,39 +42,6 @@ public class CategoryRepo : Respository<Category>, ICategoryRepo
         }
     }
 
-    public async Task<Category?> CreateCategoryAsync(Category model)
-    {
-
-        try
-        {
-            model.CreatedAt = DateTime.UtcNow;
-
-            var rowsAffected = await AddAsync(model);
-
-            return rowsAffected is 0 ? null : model;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error creating {nameof(Category)} ");
-            return null;
-        }
-    }
-
-    public async Task<bool> DeleteCategoryAsync(int id)
-    {
-        try
-        {
-            var rowsAffected = await DeleteAsync(id);
-
-            return rowsAffected > 0;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error deleting {nameof(Category)}");
-            return false;
-        }
-    }
-
     public async Task<Category?> GetCategoryWithProductsByIdAsync(int id)
     {
         var query = @"
@@ -145,19 +112,20 @@ public class CategoryRepo : Respository<Category>, ICategoryRepo
         return categoryDict.Values;
     }
 
-    public async Task<Category?> UpdateCategoryAsync(Category model)
+    public async Task<Category?> CreateCategoryAsync(Category model)
     {
+
         try
         {
-            model.UpdatedAt = DateTime.UtcNow;
+            model.CreatedAt = DateTime.UtcNow;
 
-            var rowsAffected = await UpdateAsync(model.Id, model);
+            var rowsAffected = await AddAsync(model);
 
             return rowsAffected is 0 ? null : model;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error updating {nameof(Category)}");
+            _logger.LogError(ex, $"Error creating {nameof(Category)} ");
             return null;
         }
     }
@@ -175,6 +143,38 @@ public class CategoryRepo : Respository<Category>, ICategoryRepo
         {
             _logger.LogError($"Get Category list Error {ex}");
             return Enumerable.Empty<Category>();
+        }
+    }
+
+    public async Task<bool> DeleteCategoryAsync(int id)
+    {
+        try
+        {
+            var rowsAffected = await DeleteAsync(id);
+
+            return rowsAffected > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error deleting {nameof(Category)}");
+            return false;
+        }
+    }
+
+    public async Task<Category?> UpdateCategoryAsync(Category model)
+    {
+        try
+        {
+            model.UpdatedAt = DateTime.UtcNow;
+
+            var rowsAffected = await UpdateAsync(model.Id, model);
+
+            return rowsAffected is 0 ? null : model;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error updating {nameof(Category)}");
+            return null;
         }
     }
 }

@@ -15,12 +15,14 @@ public class CategoriesController : Controller
     public CategoriesController(ICategoryService categoryService) =>  _categoryService = categoryService;
    
     #region GET: Categories
-    public async Task<IActionResult> Index() => View(await _categoryService.GetCategoryAsync());
+    public async Task<IActionResult> Index() => View(await _categoryService.GetCategoriesWithProductsAsync());
     #endregion
+
 
     #region GET: Categories/Create
     public IActionResult Create() => View();
     #endregion
+
 
     #region POST: Categories/Create
     [HttpPost]
@@ -35,6 +37,7 @@ public class CategoriesController : Controller
     }
     #endregion
 
+
     #region GET: Categories/Edit/5
     public async Task<IActionResult> Edit(int id)
     {
@@ -43,6 +46,7 @@ public class CategoriesController : Controller
         return category is null ? NotFound():  View(category);
     }
     #endregion
+
 
     #region POST: Categories/Edit/5
     [HttpPost]
@@ -63,23 +67,59 @@ public class CategoriesController : Controller
     }
     #endregion
 
-    #region GET: Categories/Delete/5
-    public async Task<IActionResult> Delete(int id)
+
+    #region GET: Category/Details/5
+    public async Task<IActionResult> Details(int id)
     {
-        if (id is 0) return NotFound();
-        var category = await _categoryService.GetCategoryByIdAsync(id);
+        if (id is 0)
+            return NotFound();
+
+        var category = await _categoryService.GetCategoryWithProductsByIdAsync(id);
+
         return category is null ? NotFound() : View(category);
     }
     #endregion
 
-    #region POST: Categories/Delete/5
+
+    #region GET: Category/Delete/5
+    public async Task<IActionResult> Delete(int id)
+    {
+        if (id is 0) return NotFound();
+
+        var category = await _categoryService.GetCategoryWithProductsByIdAsync(id);
+
+        return category is null ? NotFound() : View(category);
+
+    }
+    #endregion
+
+
+    #region POST: Category/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        await _categoryService.DeleteCategoryAsync(id);
+        var (success, error, category) = await _categoryService.DeleteConfirmAsync(id);
+
+        if (success)
+        {
+            TempData["Success"] = "Category deleted successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (error is "Category not found") return NotFound();
+
+        if (category is not null)
+        {
+            ModelState.AddModelError("", error ?? "An error occurred while deleting.");
+            return View("Delete", category);
+        }
+
+        TempData["Error"] = error ?? "Unexpected error.";
         return RedirectToAction(nameof(Index));
     }
+
     #endregion
+
 
 }

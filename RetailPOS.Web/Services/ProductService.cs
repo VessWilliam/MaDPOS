@@ -1,5 +1,4 @@
-﻿using Dapper;
-using Mapster;
+﻿using Mapster;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Models.ViewModel;
 using RetailPOS.Web.Repositories.IRepository;
@@ -9,19 +8,15 @@ namespace RetailPOS.Web.Services;
 
 public class ProductService : IProductService
 {
-
-    private readonly IDapperBaseService _dapperBaseService;
     private readonly IProductRepo _productRepo;
     private readonly ILogger _logger;
 
-    public ProductService(IDapperBaseService dapperBaseService,
+    public ProductService(
         IProductRepo productRepo,
         ILoggerFactory loggerFactory)
     {
-
-        _logger = loggerFactory.CreateLogger<ProductService>();
-        _dapperBaseService = dapperBaseService;
         _productRepo = productRepo;
+        _logger = loggerFactory.CreateLogger<ProductService>();
     }
 
     public async Task<ProductViewModel?> CreateProductViewModelAsync(ProductViewModel model)
@@ -46,7 +41,7 @@ public class ProductService : IProductService
     {
         try
         {
-            if(id is 0) return false;   
+            if (id is 0) return false;
 
             var result = await _productRepo.DeleteProductAsync(id);
 
@@ -63,23 +58,8 @@ public class ProductService : IProductService
     {
         try
         {
-            var query = @"
-            SELECT  
-                p.""Id"", 
-                p.""Name"", 
-                p.""Description"", 
-                p.""Price"", 
-                p.""StockQuantity"", 
-                p.""ImageUrl"", 
-                p.""CategoryId"",
-                c.""Name"" AS ""CategoryName""
-            FROM ""Products"" p
-            LEFT JOIN ""Categories"" c ON p.""CategoryId"" = c.""Id""
-            ORDER BY p.""Name"" ASC;
-        ";
-
-            return await _dapperBaseService.getDBConnectionAsync(async connection =>
-                await connection.QueryAsync<ProductViewModel>(query));
+            var result = await _productRepo.GetProductViewModelListsAsync();
+            return result.Adapt<IEnumerable<ProductViewModel>>();
         }
         catch (Exception ex)
         {
@@ -92,26 +72,8 @@ public class ProductService : IProductService
     {
         try
         {
-            var param = new DynamicParameters();
-            param.Add("@id", id);
-
-            var query = @"
-            SELECT 
-                p.""Id"",
-                p.""Name"",
-                p.""Description"",
-                p.""Price"",
-                p.""StockQuantity"",
-                p.""ImageUrl"",
-                p.""CategoryId"",
-                c.""Name"" AS ""CategoryName""
-            FROM ""Products"" p
-            LEFT JOIN ""Categories"" c ON p.""CategoryId"" = c.""Id""
-            WHERE p.""Id"" = @id";
-
-            return await _dapperBaseService.getDBConnectionAsync(async connection =>
-                await connection.QueryFirstOrDefaultAsync<ProductViewModel>(query, param)
-            );
+            var result = await _productRepo.GetProductViewModelWithIdAsync(id);
+            return result.Adapt<ProductViewModel>();
         }
         catch (Exception ex)
         {
@@ -125,7 +87,7 @@ public class ProductService : IProductService
         try
         {
             var product = model.Adapt<Product>();
-            product.Id = model.Id;  
+            product.Id = model.Id;
 
             var updatedProduct = await _productRepo.UpdateProductAsync(product);
 

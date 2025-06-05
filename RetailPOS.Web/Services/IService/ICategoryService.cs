@@ -5,16 +5,16 @@ namespace RetailPOS.Web.Services.IService;
 public interface ICategoryService
 {
     Task<IEnumerable<Category>> GetCategoryAsync();
-    Task<Category?> CreateCategoryAsync(Category model);
     Task<Category?> UpdateCategoryAsync(Category model);
-    Task<bool> DeleteCategoryAsync(int id);
+    
     Task<Category?> GetCategoryByIdAsync(int id);
 
+    Task<Category?> CreateCategoryAsync(Category model);
 
 
-    #region CategoryProduct
+ 
     Task<IEnumerable<Category>> GetCategoriesWithProductsAsync();
     Task<Category?> GetCategoryWithProductsByIdAsync(int id);
     Task<(bool success, string? error, Category? category)> DeleteConfirmAsync(int id);
-    #endregion
+   
 }

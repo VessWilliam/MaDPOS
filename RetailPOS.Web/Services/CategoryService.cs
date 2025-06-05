@@ -84,8 +84,9 @@ public class CategoryService : ICategoryService
     {
         try
         {
-            return await _categoryRepo.GetCategoriesWithProductsAsync();
-        }
+            var result = await _categoryRepo.GetCategoriesWithProductsAsync();
+            return result;
+        } 
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Failed to get category with product");
@@ -135,20 +136,4 @@ public class CategoryService : ICategoryService
         }
     }
 
-    public async Task<bool> DeleteCategoryAsync(int id)
-    {
-        try
-        {
-            if (id is 0) return false;
-
-            var result = await _categoryRepo.DeleteCategoryAsync(id);
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error delete {nameof(Category)} with Id: {id}");
-            return false;
-        }
-    }
 }
