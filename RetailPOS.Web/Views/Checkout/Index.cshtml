@@ -119,7 +119,8 @@
                 }
 
                 const productId = product.val();
-                const productName = product.text();
+                // Extract and trim product name to remove whitespace and newlines
+                const productName = product.text().split(' - ')[0].trim();
                 const price = parseFloat(product.data('price'));
                 const stock = parseInt(product.data('stock'));
 
@@ -128,15 +129,21 @@
                     return;
                 }
 
-                const item = {
-                    productId: productId,
-                    productName: productName,
-                    price: price,
-                    quantity: quantity,
-                    total: price * quantity
-                };
+                // Check if the product already exists (using trimmed ProductName)
+                let existingItem = items.find(item => item.ProductName.trim() === productName);
+                if (existingItem) {
+                    existingItem.Quantity += quantity;
+                } else {
+                    const item = {
+                        ProductId: productId,
+                        ProductName: productName,
+                        Price: price,
+                        Quantity: quantity
+                    };
+                    items.push(item);
+                }
 
-                items.push(item);
+                console.log('Items after add:', items); 
                 updateTable();
                 resetForm();
             });
@@ -144,27 +151,29 @@
             function updateTable() {
                 const tbody = $('#itemsTable tbody');
                 tbody.empty();
-
                 let total = 0;
 
                 items.forEach((item, index) => {
-                    tbody.append(`
-                                <tr>
-                                    <td>${item.productName}</td>
-                                    <td>$${item.price.toFixed(2)}</td>
-                                    <td>${item.quantity}</td>
-                                    <td>$${item.total.toFixed(2)}</td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-outline-danger remove-item" data-index="${index}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            `);
-                    total += item.total;
+                    const itemTotal = item.Price * item.Quantity;
+                    total += itemTotal;
+
+                    tbody.append(
+                        '<tr>' +
+                        '<td>' + item.ProductName + '</td>' +
+                        '<td>$' + item.Price.toFixed(2) + '</td>' +
+                        '<td>' + item.Quantity + '</td>' +
+                        '<td>$' + itemTotal.toFixed(2) + '</td>' +
+                        '<td>' +
+                        '<button type="button" class="btn btn-sm btn-outline-danger remove-item" data-index="' + index + '">' +
+                        '<i class="bi bi-trash"></i>' +
+                        '</button>' +
+                        '</td>' +
+                        '</tr>'
+                    );
                 });
 
-                $('#totalAmount').text(`$${total.toFixed(2)}`);
+                console.log('Total:', total); // Debug
+                $('#totalAmount').text('$' + total.toFixed(2));
             }
 
             function resetForm() {
@@ -175,6 +184,7 @@
             $(document).on('click', '.remove-item', function () {
                 const index = $(this).data('index');
                 items.splice(index, 1);
+                console.log('Items after remove:', items); // Debug
                 updateTable();
             });
 
@@ -195,9 +205,11 @@
                     },
                     data: JSON.stringify({ items: items }),
                     success: function (response) {
+                        console.log('Success:', response); // Debug
                         window.location.href = response.redirectUrl;
                     },
-                    error: function () {
+                    error: function (xhr, status, error) {
+                        console.error('Error:', xhr, status, error); // Debug
                         alert('An error occurred while processing your sale. Please try again.');
                     }
                 });
