@@ -125,7 +125,7 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
                         return transaction;
                     },
                     param,
-                    splitOn: "Id,Id" 
+                    splitOn: "Id,Id"
                 );
 
                 return transactionDictionary.Values.FirstOrDefault();
@@ -254,5 +254,97 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
             return false;
         }
 
+    }
+
+    public async Task<bool> DeleteSaleTransactionAsync(int id)
+    {
+        try
+        {
+
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            var sale = await context.SalesTransactions
+               .Include(s => s.Items)
+               .FirstOrDefaultAsync(s => s.Id == id);
+
+
+            if (sale is null) return false;
+
+
+            if (sale.Status is nameof(StatusEnum.COMPLETED))
+                return false;
+
+
+
+            foreach (var item in sale.Items)
+            {
+                var product = await context.Products.FindAsync(item.ProductId);
+                if (product is not null)
+                {
+                    product.StockQuantity += item.Quantity;
+                }
+            }
+
+            context.SalesTransactions.Remove(sale);
+            await context.SaveChangesAsync();
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error delete  transaction error");
+            return false;
+        }
+
+
+    }
+
+    public async Task<SalesTransaction?> GetTransactionsWithByIdAsync(int id)
+    {
+        try
+        {
+            var param = new DynamicParameters();
+            param.Add("@Id", id);
+
+            const string query = @"
+            SELECT s.*, i.*, p.*
+            FROM ""SalesTransactions"" s
+            INNER JOIN ""SalesTransactionItems"" i ON s.""Id"" = i.""SalesTransactionId""
+            INNER JOIN ""Products"" p ON i.""ProductId"" = p.""Id""
+            WHERE s.""Id"" = @Id;
+        ";
+
+            var transactionDictionary = new Dictionary<int, SalesTransaction>();
+
+            return await _dapperBaseService.getDBConnectionAsync(async connection =>
+            {
+                var result = await connection.QueryAsync<SalesTransaction, SalesTransactionItem, Product, SalesTransaction>(
+                    query,
+                    (transaction, item, product) =>
+                    {
+                        if (!transactionDictionary.TryGetValue(transaction.Id, out var transactionEntry))
+                        {
+                            transactionEntry = transaction;
+                            transactionEntry.Items = new List<SalesTransactionItem>();
+                            transactionDictionary[transaction.Id] = transactionEntry;
+                        }
+
+                        item.Product = product;
+                        transactionEntry.Items.Add(item);
+
+                        return transactionEntry;
+                    },
+                    param,
+                    splitOn: "Id,Id"
+                );
+
+                return transactionDictionary.Values.FirstOrDefault();
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching transaction with items and product details.");
+            return null;
+        }
     }
 }

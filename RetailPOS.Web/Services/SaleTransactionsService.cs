@@ -30,6 +30,34 @@ public class SaleTransactionsService : ISaleTransactionsService
         }
     }
 
+    public async Task<bool> DeleteSaleTransactionAsync(int id)
+    {
+        try
+        {
+            var result = await _saleTransactionsRepo.DeleteSaleTransactionAsync(id);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error Get sale transaction List Error");
+            return false;
+        }
+    }
+
+    public async Task<SalesTransaction?> GetTransactionsWithByIdAsync(int id)
+    {
+        try
+        {
+            var result = await _saleTransactionsRepo.GetTransactionWithItemsIdAsync(id);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error Get sale transaction List Error");
+            return null;
+        }
+    }
+
     public async Task<List<SalesTransaction>> GetTransactionsWithItemsAsync()
     {
         try

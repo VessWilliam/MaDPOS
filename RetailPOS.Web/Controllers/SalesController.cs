@@ -38,7 +38,7 @@ public class SalesController : Controller
         var totalSales = sales.Sum(s => s.TotalAmount);
         var totalTransactions = sales.Count;
         var averageTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0;
-        
+
         ViewBag.TotalSales = totalSales;
         ViewBag.TotalTransactions = totalTransactions;
         ViewBag.AverageTransaction = averageTransaction;
@@ -99,11 +99,11 @@ public class SalesController : Controller
     public async Task<IActionResult> Details(int? id)
     {
         if (id is null) return NotFound();
-        
+
         var sale = await _saleTransactionsService
             .GetTransactionWithItemsIdAsync(id.Value);
 
-        return sale is null ? NotFound() : View(sale);  
+        return sale is null ? NotFound() : View(sale);
     }
     #endregion
 
@@ -152,77 +152,51 @@ public class SalesController : Controller
         sale.PaymentStatus = nameof(StatusEnum.PENDING);
 
         await _saleTransactionsService.CreateNewSaleTransaction(sale);
-       
+
         return RedirectToAction(nameof(Index));
     }
     #endregion
 
 
-
-    // GET: Sales/Delete/5
+    #region GET: Sales/Delete/5
     public async Task<IActionResult> Delete(int? id)
     {
-        if (id == null)
-        {
+        if (id is null)
             return NotFound();
-        }
 
-        var sale = await _context.SalesTransactions
-            .Include(s => s.Items)
-                .ThenInclude(i => i.Product)
-            .FirstOrDefaultAsync(s => s.Id == id);
+        var result = await _saleTransactionsService.GetTransactionsWithByIdAsync(id.Value);
 
-        if (sale == null)
-        {
+        if (result is null)
             return NotFound();
-        }
 
-        if (sale.Status == "Completed")
+        if (result.Status is nameof(StatusEnum.COMPLETED))
         {
+            TempData["Error"] = "Completed transactions cannot be deleted.";
             return RedirectToAction(nameof(Index));
         }
 
-        return View(sale);
+        return View(result);
     }
+    #endregion
 
-    // POST: Sales/Delete/5
+
+    #region POST: Sales/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var sale = await _context.SalesTransactions
-            .Include(s => s.Items)
-            .FirstOrDefaultAsync(s => s.Id == id);
+        var success = await _saleTransactionsService.DeleteSaleTransactionAsync(id);
 
-        if (sale == null)
+        if (!success)
         {
-            return NotFound();
-        }
-
-        if (sale.Status == "Completed")
-        {
+            TempData["Error"] = "Unable to delete transaction. It may not exist or is already completed.";
             return RedirectToAction(nameof(Index));
         }
 
-        // Restore stock quantities
-        foreach (var item in sale.Items)
-        {
-            var product = await _context.Products.FindAsync(item.ProductId);
-            if (product != null)
-            {
-                product.StockQuantity += item.Quantity;
-            }
-        }
-
-        _context.SalesTransactions.Remove(sale);
-        await _context.SaveChangesAsync();
+        TempData["Success"] = "Sale transaction deleted successfully.";
         return RedirectToAction(nameof(Index));
     }
-
-    private bool SaleExists(int id)
-    {
-        return _context.SalesTransactions.Any(e => e.Id == id);
-    }
+    #endregion
 
     // GET: Sales/Report
     public async Task<IActionResult> Report(DateTime? startDate, DateTime? endDate)

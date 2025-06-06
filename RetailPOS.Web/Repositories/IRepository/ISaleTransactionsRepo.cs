@@ -13,7 +13,9 @@ public interface ISaleTransactionsRepo
 
     Task<List<SalesTransaction>> GetTransactionsWithItemsAsync();
 
+    Task<SalesTransaction?> GetTransactionsWithByIdAsync(int id);
+
     Task<bool> CreateNewSaleTransaction(SalesTransaction model);
 
-
+    Task<bool> DeleteSaleTransactionAsync(int id);
 }
