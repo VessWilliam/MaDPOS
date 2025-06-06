@@ -54,8 +54,6 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
                 });
 
                 total += totalPrice;
-
-                product.StockQuantity -= item.Quantity;
             }
 
             if (amount < total)
