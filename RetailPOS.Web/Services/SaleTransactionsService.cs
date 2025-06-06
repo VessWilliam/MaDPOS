@@ -16,6 +16,20 @@ public class SaleTransactionsService : ISaleTransactionsService
         _saleTransactionsRepo = saleTransactionsRepo;
     }
 
+    public async Task<List<SalesTransaction>> GetTransactionsWithItemsAsync()
+    {
+        try
+        {
+            var result = await _saleTransactionsRepo.GetTransactionsWithItemsAsync();
+            return result is null ? new List<SalesTransaction>() : result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error Get sale transaction List Error");
+            return new List<SalesTransaction>();
+        }
+    }
+
     public async Task<SalesTransaction?> GetTransactionWithItemsIdAsync(int id)
     {
         try
@@ -26,13 +40,14 @@ public class SaleTransactionsService : ISaleTransactionsService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error Get sale transaction receipt Error");
+            _logger.LogError(ex, $"Error Get sale transaction  Error");
             return null;
         }
 
     }
 
-    public async Task<int> ProcessTransactionAsync(SalesTransaction transaction, List<CartItemViewModel> cart, decimal amount)
+    public async Task<int> ProcessTransactionAsync(SalesTransaction transaction,
+        List<CartItemViewModel> cart, decimal amount)
     {
         try
         {

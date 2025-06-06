@@ -8,5 +8,6 @@ public interface ISaleTransactionsService
     Task<int> ProcessTransactionAsync(SalesTransaction transaction, List<CartItemViewModel> cart, decimal amount);
     Task<SalesTransaction?> GetTransactionWithItemsIdAsync(int id);
     Task<bool> UpdateTransactionStatusAsync(int id, string status, string paymentStatus);
+    Task<List<SalesTransaction>> GetTransactionsWithItemsAsync();
 
 }

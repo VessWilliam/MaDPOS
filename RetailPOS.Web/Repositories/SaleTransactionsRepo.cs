@@ -81,7 +81,6 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
         }
     }
 
-
     public async Task<SalesTransaction?> GetTransactionWithItemsIdAsync(int id)
     {
         try
@@ -139,6 +138,53 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
         }
     }
 
+    public async Task<List<SalesTransaction>> GetTransactionsWithItemsAsync()
+    {
+        try
+        {
+            var query = @"
+            SELECT
+                t.""Id"", t.""CustomerName"", t.""TransactionDate"", t.""Status"", t.""PaymentStatus"", t.""TotalAmount"",
+                i.""Id"", i.""SalesTransactionId"", i.""ProductId"", i.""Quantity"", i.""UnitPrice"", i.""TotalPrice"",
+                p.""Id"", p.""Name"", p.""Price"", p.""StockQuantity"", p.""ImageUrl""
+            FROM ""SalesTransactions"" t
+            INNER JOIN ""SalesTransactionItems"" i ON t.""Id"" = i.""SalesTransactionId""
+            INNER JOIN ""Products"" p ON i.""ProductId"" = p.""Id""
+            ORDER BY t.""TransactionDate"" DESC;";
+
+            var transactionDictionary = new Dictionary<int, SalesTransaction>();
+
+            return await _dapperBaseService.getDBConnectionAsync(async connection =>
+            {
+                var result = await connection.QueryAsync<SalesTransaction, SalesTransactionItem, Product, SalesTransaction>(
+                    query,
+                    (transaction, item, product) =>
+                    {
+                        if (!transactionDictionary.TryGetValue(transaction.Id, out var transactionEntry))
+                        {
+                            transactionEntry = transaction;
+                            transactionEntry.Items = new List<SalesTransactionItem>();
+                            transactionDictionary.Add(transactionEntry.Id, transactionEntry);
+                        }
+
+                        item.Product = product;
+                        transactionEntry.Items.Add(item);
+
+                        return transactionEntry;
+                    },
+                    splitOn: "Id,Id"
+                );
+
+                return transactionDictionary.Values.ToList();
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving transactions");
+            return new List<SalesTransaction>();
+        }
+    }
+
     public async Task<bool> UpdateTransactionStatusAsync(int id, string status, string paymentStatus)
     {
         try
@@ -176,4 +222,7 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
             return false;
         }
     }
+
+
+
 }

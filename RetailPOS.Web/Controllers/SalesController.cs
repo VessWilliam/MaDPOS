@@ -25,47 +25,84 @@ public class SalesController : Controller
         _saleTransactionsService = saleTransactionsService;
     }
 
-    // GET: Sales
+    #region GET: Sales
     public async Task<IActionResult> Index()
     {
-        var sales = await _context.SalesTransactions
-            .Include(s => s.Items)
-                .ThenInclude(i => i.Product)
-            .OrderByDescending(s => s.TransactionDate)
-            .ToListAsync();
+        var sales = await _saleTransactionsService.GetTransactionsWithItemsAsync();
 
         var totalSales = sales.Sum(s => s.TotalAmount);
         var totalTransactions = sales.Count;
         var averageTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0;
-
         
         ViewBag.TotalSales = totalSales;
         ViewBag.TotalTransactions = totalTransactions;
         ViewBag.AverageTransaction = averageTransaction;
-
         return View(sales);
     }
+    #endregion
 
-    // GET: Sales/Details/5
-    public async Task<IActionResult> Details(int? id)
+
+    #region GET: Sales/Edit/5
+    public async Task<IActionResult> Edit(int? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
+        if (id is null) return NotFound();
 
-        var sale = await _context.SalesTransactions
-            .Include(s => s.Items)
-                .ThenInclude(i => i.Product)
-            .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (sale == null)
-        {
-            return NotFound();
-        }
+        var sale = await _saleTransactionsService.GetTransactionWithItemsIdAsync(id.Value);
+
+
+        if (sale is null) return NotFound();
+
+
+        if (sale.Status is nameof(StatusEnum.COMPLETED)) return RedirectToAction(nameof(Index));
+
+
+        ViewBag.Products = sale.Items
+            .Where(i => i.Product != null)
+            .Select(i => i.Product)
+            .ToList()
+            .OrderBy(i => i!.Name);
 
         return View(sale);
     }
+    #endregion
+
+
+    #region POST: Sales/Edit/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, SalesTransaction sale)
+    {
+        if (id != sale.Id)
+            return NotFound();
+
+        if (!ModelState.IsValid)
+            return View(sale);
+
+        var updated = await _saleTransactionsService
+            .UpdateTransactionStatusAsync(id, sale.Status, sale.PaymentStatus!);
+
+        if (!updated)
+            return RedirectToAction(nameof(Index));
+
+        return RedirectToAction(nameof(Index));
+    }
+    #endregion
+
+
+    #region GET: Sales/Details/5
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (id is null) return NotFound();
+        
+        var sale = await _saleTransactionsService
+            .GetTransactionWithItemsIdAsync(id.Value);
+
+        return sale == null ? NotFound() : View(sale);  
+    }
+    #endregion
+
+
 
     // GET: Sales/Create
     public IActionResult Create()
@@ -76,6 +113,8 @@ public class SalesController : Controller
             .ToList();
         return View();
     }
+
+
 
     // POST: Sales/Create
     [HttpPost]
@@ -98,49 +137,6 @@ public class SalesController : Controller
         return View(sale);
     }
 
-    // GET: Sales/Edit/5
-    public async Task<IActionResult> Edit(int? id)
-    {
-        if (id is null) return NotFound();
-        
-
-        var sale = await _saleTransactionsService.GetTransactionWithItemsIdAsync(id.Value);
-
-
-        if (sale is null) return NotFound();
-        
-
-        if (sale.Status is nameof(StatusEnum.COMPLETED))  return RedirectToAction(nameof(Index));
-        
-
-        ViewBag.Products = sale.Items
-            .Where(i => i.Product != null)
-            .Select(i => i.Product)
-            .ToList()
-            .OrderBy(i => i!.Name);
-
-        return View(sale);
-    }
-
-    // POST: Sales/Edit/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, SalesTransaction sale)
-    {
-        if (id != sale.Id)
-            return NotFound();
-
-        if (!ModelState.IsValid)
-            return View(sale);
-
-        var updated = await _saleTransactionsService
-            .UpdateTransactionStatusAsync(id, sale.Status, sale.PaymentStatus!);
-
-        if (!updated)
-            return RedirectToAction(nameof(Index));
-
-        return RedirectToAction(nameof(Index));
-    }
 
     // GET: Sales/Delete/5
     public async Task<IActionResult> Delete(int? id)
