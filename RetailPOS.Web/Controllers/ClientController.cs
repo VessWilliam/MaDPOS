@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RetailPOS.Web.Data;
 using RetailPOS.Web.Models.ViewModel;
 using RetailPOS.Web.Services.IService;
 using RetailPOS.Web.Utility;
@@ -11,13 +10,11 @@ public class ClientController : Controller
 
     private readonly IProductService _productService;
     private readonly IRedisCacheService _redisCacheService;
-    private readonly ApplicationDbContext _context;
+
     public ClientController(IProductService productService,
-        ApplicationDbContext context,
         IRedisCacheService redisCacheService)
     {
         _productService = productService;
-        _context = context;
         _redisCacheService = redisCacheService;
     }
 
@@ -81,16 +78,11 @@ public class ClientController : Controller
         if (item is not null)
         {
             if (Quantity <= 0)
-            {
                 cart.Remove(item);
-            }
             else
-            {
                 item.Quantity = Quantity;
-            }
 
             await _redisCacheService.SetData(nameof(CartItemViewModel), cart, TimeSpan.FromMinutes(30));
-
         }
 
         return RedirectToAction(nameof(Cart));
@@ -129,7 +121,7 @@ public class ClientController : Controller
 
 
     [HttpPost]
-    public IActionResult ProceedToCheckout() => RedirectToAction("Index", "Checkout");
+    public IActionResult ProceedToCheckout() => RedirectToAction(nameof(Index), "Checkout");
 
 
 
