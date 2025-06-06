@@ -91,7 +91,7 @@
                     </div>
                     <div class="d-grid gap-2">
                         <button type="button" class="btn btn-success" id="completeSale">
-                            <i class="bi bi-check-circle me-2"></i>Complete Sale
+                            <i class="bi bi-check-circle me-2"></i>Process payment
                         </button>
                     </div>
                 </div>
@@ -108,6 +108,25 @@
         $(document).ready(function () {
             let items = @Html.Raw(cartItemsJson);
 
+            // Function to save cart items to Redis via AJAX
+            function saveCartToRedis() {
+                $.ajax({
+                    url: '@Url.Action("SaveCart", "Checkout")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(items),
+                    headers: {
+                        'RequestVerificationToken': $('#antiForgeryToken').val()
+                    },
+                    success: function () {
+                        console.log('Cart saved to Redis');
+                    },
+                    error: function () {
+                        alert('Failed to save cart.');
+                    }
+                });
+            }
+
             $('#addItem').click(function () {
                 const productSelect = $('#productSelect');
                 const product = productSelect.find('option:selected');
@@ -119,7 +138,6 @@
                 }
 
                 const productId = product.val();
-                // Extract and trim product name to remove whitespace and newlines
                 const productName = product.text().split(' - ')[0].trim();
                 const price = parseFloat(product.data('price'));
                 const stock = parseInt(product.data('stock'));
@@ -129,7 +147,6 @@
                     return;
                 }
 
-                // Check if the product already exists (using trimmed ProductName)
                 let existingItem = items.find(item => item.ProductName.trim() === productName);
                 if (existingItem) {
                     existingItem.Quantity += quantity;
@@ -143,9 +160,11 @@
                     items.push(item);
                 }
 
-                console.log('Items after add:', items); 
                 updateTable();
                 resetForm();
+
+                // Save cart to Redis after adding item
+                saveCartToRedis();
             });
 
             function updateTable() {
@@ -172,7 +191,6 @@
                     );
                 });
 
-                console.log('Total:', total); // Debug
                 $('#totalAmount').text('$' + total.toFixed(2));
             }
 
@@ -184,8 +202,10 @@
             $(document).on('click', '.remove-item', function () {
                 const index = $(this).data('index');
                 items.splice(index, 1);
-                console.log('Items after remove:', items); // Debug
                 updateTable();
+
+                // Save cart to Redis after removing item
+                saveCartToRedis();
             });
 
             $('#completeSale').click(function () {
@@ -194,26 +214,17 @@
                     return;
                 }
 
-                const token = $('#antiForgeryToken').val();
+                // Save the items in localStorage so Payment view can access them
+                localStorage.setItem('checkoutItems', JSON.stringify(items));
 
-                $.ajax({
-                    url: '@Url.Action("Process", "Checkout")',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    headers: {
-                        'RequestVerificationToken': token
-                    },
-                    data: JSON.stringify({ items: items }),
-                    success: function (response) {
-                        console.log('Success:', response); // Debug
-                        window.location.href = response.redirectUrl;
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('Error:', xhr, status, error); // Debug
-                        alert('An error occurred while processing your sale. Please try again.');
-                    }
-                });
+                // Optional: store total
+                const totalAmount = items.reduce((sum, item) => sum + (item.Price * item.Quantity), 0);
+                localStorage.setItem('checkoutTotal', totalAmount.toFixed(2));
+
+                // Redirect to the Payment view
+                window.location.href = '@Url.Action("Payment", "Checkout")';
             });
         });
+    </script>
     </script>
 }

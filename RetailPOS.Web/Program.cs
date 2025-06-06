@@ -41,11 +41,13 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();    
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+builder.Services.AddScoped<ISaleTransactionsService, SaleTransactionsService>();    
 
 //Repositories
 builder.Services.AddTransient(typeof(IRepository<>), typeof(Respository<>));
 builder.Services.AddTransient<IProductRepo, ProductRepo>();
 builder.Services.AddTransient<ICategoryRepo, CategoryRepo>();
+builder.Services.AddTransient<ISaleTransactionsRepo, SaleTransactionsRepo>();
 
 
 //Add Seeder Database
