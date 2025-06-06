@@ -39,9 +39,19 @@
                                 <li class="nav-item">
                                     <a class="nav-link text-white" asp-controller="Home" asp-action="Index">Home</a>
                                 </li>
+
+                                if (User.IsInRole("Admin"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-white" asp-controller="Client" asp-action="Index">Shop</a>
+                                    </li>
+
+                                }
+
                                 <li class="nav-item">
                                     <a class="nav-link text-white" asp-controller="Products" asp-action="Index">Products</a>
                                 </li>
+
                                 <li class="nav-item">
                                     <a class="nav-link text-white" asp-controller="Categories" asp-action="Index">Categories</a>
                                 </li>
@@ -58,7 +68,7 @@
                             if (User.IsInRole("Cashier"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-white" asp-controller="Sales" asp-action="Index">Sales</a>
+                                    <a class="nav-link text-white" asp-controller="CheckOut" asp-action="Index">Sales</a>
                                 </li>
                             }
                         }
@@ -67,12 +77,19 @@
                     <ul class="navbar-nav">
                         @if (isAuth)
                         {
-                            <li class="nav-item border border-light rounded-pill px-3 ps-3">
-                                <span class="nav-link text-muted">Hello, <span class="text-info">@User.Identity?.Name</span></span>
-                            </li>
+                            //<li class="nav-item border border-light rounded-pill px-3 ps-3">
+                            //  <span class="nav-link text-muted">Hello, <span class="text-info">@User.Identity?.Name</span></span>
+                            //</li>
 
                             @if (User.IsInRole("Admin"))
                             {
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Client" asp-action="Cart">
+                                        <i class="bi bi-cart"></i>
+                                    </a>
+                                </li>
+
                                 <li class="nav-item">
                                     <a class="nav-link text-warning px-3" asp-controller="Account" asp-action="Register">Register</a>
                                 </li>

@@ -17,6 +17,6 @@ public interface ISaleTransactionsService
 
     Task<bool> DeleteSaleTransactionAsync(int id);
 
-
+    Task<List<SalesTransaction>> GetSalesTransactionsReportAsync(DateTime? startDate, DateTime? endDate);
 
 }

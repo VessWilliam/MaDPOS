@@ -347,4 +347,71 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
             return null;
         }
     }
+
+    public async Task<List<SalesTransaction>> GetSalesTransactionsReportAsync(DateTime? startDate, DateTime? endDate)
+    {
+        try
+        {
+            var parameters = new DynamicParameters();
+            var whereClause = "WHERE 1=1";
+
+            if (startDate.HasValue)
+            {
+                whereClause += " AND s.\"TransactionDate\"::date >= @StartDate::date";
+                parameters.Add("@StartDate", startDate.Value.Date);
+            }
+
+            if (endDate.HasValue)
+            {
+                whereClause += " AND s.\"TransactionDate\"::date <= @EndDate::date";
+                parameters.Add("@EndDate", endDate.Value.Date);
+            }
+
+            var sql = $@"
+                    SELECT 
+                        s.*, 
+                        i.*, 
+                        p.*
+                    FROM ""SalesTransactions"" s
+                    INNER JOIN ""SalesTransactionItems"" i ON s.""Id"" = i.""SalesTransactionId""
+                    INNER JOIN ""Products"" p ON i.""ProductId"" = p.""Id""
+                    {whereClause}
+                    ORDER BY s.""TransactionDate"" DESC;
+                ";
+
+            var transactionDict = new Dictionary<int, SalesTransaction>();
+
+
+            return await _dapperBaseService.getDBConnectionAsync(async connection =>
+            {
+                var result = await connection.QueryAsync<SalesTransaction, SalesTransactionItem, Product, SalesTransaction>(
+                sql,
+                (sale, item, product) =>
+                {
+                    if (!transactionDict.TryGetValue(sale.Id, out var saleEntry))
+                    {
+                        saleEntry = sale;
+                        saleEntry.Items = new List<SalesTransactionItem>();
+                        transactionDict.Add(sale.Id, saleEntry);
+                    }
+
+                    item.Product = product;
+                    saleEntry.Items.Add(item);
+
+                    return saleEntry;
+                },
+                param: parameters,
+                splitOn: "Id,Id"
+                );
+
+                return transactionDict.Values.ToList();
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching sales transactions with Dapper.");
+            return new List<SalesTransaction>();
+        }
+    }
+
 }

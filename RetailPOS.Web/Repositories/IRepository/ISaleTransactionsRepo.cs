@@ -18,4 +18,7 @@ public interface ISaleTransactionsRepo
     Task<bool> CreateNewSaleTransaction(SalesTransaction model);
 
     Task<bool> DeleteSaleTransactionAsync(int id);
+
+
+    Task<List<SalesTransaction>> GetSalesTransactionsReportAsync(DateTime? startDate, DateTime? endDate);
 }

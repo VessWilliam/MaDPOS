@@ -23,7 +23,8 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label text-light">Transaction Date</label>
-                                <input class="form-control bg-dark text-light border-secondary" value="@Model.TransactionDate.ToString("g")" readonly />
+                                <input class="form-control bg-dark text-light border-secondary"
+                                value="@Model.TransactionDate.ToString("MM/dd/yyyy")" readonly />
                             </div>
                         </div>
 
@@ -60,7 +61,7 @@
                         <div class="row mb-1 align-items-end">
                             <div class="col-md-6">
                                 <label asp-for="Status" class="form-label">Status</label>
-                                <select asp-for="Status" class="form-select">
+                                <select asp-for="Status" class="form-select bg-dark text-light">
                                     <option value="Pending">PENDING</option>
                                     <option value="Completed">COMPLETED</option>
                                     <option value="Cancelled">CANCELLED</option>
@@ -68,9 +69,9 @@
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="PaymentStatus" class="form-label">Payment Status</label>
-                                <select asp-for="PaymentStatus" class="form-select">
-                                    <option value="Pending">PENDING</option>
-                                    <option value="Completed">COMPLETED</option>
+                                <select asp-for="PaymentStatus" class="form-select bg-dark text-light">
+                                    <option value="Pending"  >PENDING</option>
+                                    <option value="Completed" >COMPLETED</option>
                                     <option value="Cancelled">CANCELLED</option>
                                 </select>
                             </div>

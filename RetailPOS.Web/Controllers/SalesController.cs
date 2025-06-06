@@ -15,16 +15,16 @@ namespace RetailPOS.Web.Controllers;
 [Authorize(Roles = $"{UserRoleConstant.Admin},{UserRoleConstant.Manager}, {UserRoleConstant.Cashier}")]
 public class SalesController : Controller
 {
-    private readonly ApplicationDbContext _context;
+
     private ISaleTransactionsService _saleTransactionsService;
     private IProductService _productService;
     private readonly UserManager<ApplicationUser> _userManager;
-    public SalesController(ApplicationDbContext context,
+    public SalesController(
         IProductService productService,
         UserManager<ApplicationUser> userManager,
         ISaleTransactionsService saleTransactionsService)
     {
-        _context = context;
+
         _productService = productService;
         _userManager = userManager;
         _saleTransactionsService = saleTransactionsService;
@@ -198,25 +198,9 @@ public class SalesController : Controller
     }
     #endregion
 
-    // GET: Sales/Report
-    public async Task<IActionResult> Report(DateTime? startDate, DateTime? endDate)
-    {
-        var query = _context.SalesTransactions
-            .Include(s => s.Items)
-                .ThenInclude(i => i.Product)
-            .AsQueryable();
 
-        if (startDate.HasValue)
-        {
-            query = query.Where(s => s.TransactionDate >= startDate.Value);
-        }
-
-        if (endDate.HasValue)
-        {
-            query = query.Where(s => s.TransactionDate <= endDate.Value);
-        }
-
-        var sales = await query.ToListAsync();
-        return View(sales);
-    }
+    #region GET: Sales/Report
+    public async Task<IActionResult> Report(DateTime? startDate, DateTime? endDate) =>
+        View(await _saleTransactionsService.GetSalesTransactionsReportAsync(startDate, endDate));
+    #endregion
 }

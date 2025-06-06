@@ -32,6 +32,7 @@
                 <table class="table">
                     <thead>
                         <tr>
+                            <th>ID</th>
                             <th>Date</th>
                             <th>Items</th>
                             <th>Total</th>
@@ -42,7 +43,8 @@
                         @foreach (var sale in Model)
                         {
                             <tr>
-                                <td>@sale.TransactionDate.ToString("g")</td>
+                                <td>@sale.Id</td>
+                                <td>@sale.TransactionDate.ToString("MM/dd/yyyy")</td>
                                 <td>@sale.Items.Count</td>
                                 <td>@sale.TotalAmount.ToString("C")</td>
                                 <td>@sale.Status</td>

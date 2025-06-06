@@ -44,6 +44,20 @@ public class SaleTransactionsService : ISaleTransactionsService
         }
     }
 
+    public async Task<List<SalesTransaction>> GetSalesTransactionsReportAsync(DateTime? startDate, DateTime? endDate)
+    {
+        try
+        {
+            var result = await _saleTransactionsRepo.GetSalesTransactionsReportAsync(startDate, endDate);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error Get sale transaction List Report Error");
+            return new List<SalesTransaction>();
+        }
+    }
+
     public async Task<SalesTransaction?> GetTransactionsWithByIdAsync(int id)
     {
         try
