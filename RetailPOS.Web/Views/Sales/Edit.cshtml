@@ -1,0 +1,91 @@
+﻿@model RetailPOS.Web.Models.SalesTransaction
+
+@{
+    ViewData["Title"] = "Confirm Sale";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Confirm Sale</h4>
+                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Back</a>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="row mb-1">
+                            <div class="col-md-6">
+                                <label class="form-label text-light">Customer</label>
+                                <input class="form-control bg-dark text-light border-secondary" value="@Model.CustomerName" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-light">Transaction Date</label>
+                                <input class="form-control bg-dark text-light border-secondary" value="@Model.TransactionDate.ToString("g")" readonly />
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mb-1">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Unit Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>@item.Product?.Name</td>
+                                            <td>@item.UnitPrice.ToString("C")</td>
+                                            <td>@item.Quantity</td>
+                                            <td>@item.TotalPrice.ToString("C")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Total Amount:</td>
+                                        <td class="fw-bold">@Model.TotalAmount.ToString("C")</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div class="row mb-3 align-items-end">
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label">Status</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="Pending">PENDING</option>
+                                    <option value="Completed">COMPLETED</option>
+                                    <option value="Cancelled">CANCELLED</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PaymentStatus" class="form-label">Payment Status</label>
+                                <select asp-for="PaymentStatus" class="form-select">
+                                    <option value="Pending">PENDING</option>
+                                    <option value="Completed">COMPLETED</option>
+                                    <option value="Cancelled">CANCELLED</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-check-circle me-2"></i>Update Sale Status
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

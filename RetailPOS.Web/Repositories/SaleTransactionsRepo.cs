@@ -5,6 +5,7 @@ using RetailPOS.Web.Models;
 using RetailPOS.Web.Models.ViewModel;
 using RetailPOS.Web.Repositories.IRepository;
 using RetailPOS.Web.Services.IService;
+using RetailPOS.Web.Utility;
 
 namespace RetailPOS.Web.Repositories;
 
@@ -127,6 +128,44 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
         {
             _logger.LogError(ex, $"Error retrieving transaction with id: {id}");
             return null;
+        }
+    }
+
+    public async Task<bool> UpdateTransactionStatusAsync(int id, string status, string paymentStatus)
+    {
+        try
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            var transaction = await context.SalesTransactions
+                .Include(t => t.Items)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (transaction is null || transaction.Status is nameof(StatusEnum.COMPLETED))
+                return false;
+
+            transaction.Status = status.ToUpper();
+            transaction.PaymentStatus = paymentStatus.ToUpper();
+
+            if (transaction.Status is nameof(StatusEnum.COMPLETED))
+            {
+                foreach (var item in transaction.Items)
+                {
+                    var product = await context.Products.FindAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        product.StockQuantity -= item.Quantity;
+                    }
+                }
+            }
+
+            await context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error update transaction with error {ex}");
+            return false;
         }
     }
 }

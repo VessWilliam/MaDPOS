@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using RetailPOS.Web.Data;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Utility;
+using RetailPOS.Web.Repositories.IRepository;
+using RetailPOS.Web.Services.IService;
 
 namespace RetailPOS.Web.Controllers;
 
@@ -11,10 +13,13 @@ namespace RetailPOS.Web.Controllers;
 public class SalesController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private ISaleTransactionsService _saleTransactionsService;
 
-    public SalesController(ApplicationDbContext context)
+    public SalesController(ApplicationDbContext context,
+        ISaleTransactionsService saleTransactionsService)
     {
         _context = context;
+        _saleTransactionsService = saleTransactionsService;
     }
 
     // GET: Sales
@@ -106,7 +111,7 @@ public class SalesController : Controller
             return NotFound();
         }
 
-        if (sale.Status == "Completed")
+        if (sale.Status is nameof(StatusEnum.COMPLETED))
         {
             return RedirectToAction(nameof(Index));
         }
@@ -115,6 +120,7 @@ public class SalesController : Controller
             .Where(p => p.StockQuantity > 0)
             .OrderBy(p => p.Name)
             .ToList();
+
         return View(sale);
     }
 
@@ -124,70 +130,18 @@ public class SalesController : Controller
     public async Task<IActionResult> Edit(int id, SalesTransaction sale)
     {
         if (id != sale.Id)
-        {
             return NotFound();
-        }
 
-        if (ModelState.IsValid)
-        {
-            try
-            {
-                var existingTransaction = await _context.SalesTransactions
-                    .Include(s => s.Items)
-                    .FirstOrDefaultAsync(s => s.Id == id);
+        if (!ModelState.IsValid)
+            return View(sale);
 
-                if (existingTransaction == null)
-                {
-                    return NotFound();
-                }
+        var updated = await _saleTransactionsService
+            .UpdateTransactionStatusAsync(id, sale.Status, sale.PaymentStatus!);
 
-                if (existingTransaction.Status == "Completed")
-                {
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // Remove existing items
-                _context.SalesTransactionItems.RemoveRange(existingTransaction.Items);
-
-                // Add new items
-                sale.TotalAmount = 0;
-                foreach (var item in sale.Items)
-                {
-                    var product = await _context.Products.FindAsync(item.ProductId);
-                    if (product != null)
-                    {
-                        item.UnitPrice = product.Price;
-                        sale.TotalAmount += item.UnitPrice * item.Quantity;
-
-                        // Update stock
-                        product.StockQuantity -= item.Quantity;
-                    }
-                }
-
-                existingTransaction.Items = sale.Items;
-                existingTransaction.TotalAmount = sale.TotalAmount;
-
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SaleExists(sale.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        if (!updated)
             return RedirectToAction(nameof(Index));
-        }
 
-        ViewBag.Products = _context.Products
-            .Where(p => p.StockQuantity > 0)
-            .OrderBy(p => p.Name)
-            .ToList();
-        return View(sale);
+        return RedirectToAction(nameof(Index));
     }
 
     // GET: Sales/Delete/5

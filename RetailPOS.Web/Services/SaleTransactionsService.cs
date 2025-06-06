@@ -45,4 +45,18 @@ public class SaleTransactionsService : ISaleTransactionsService
             return 0;
         }
     }
+
+    public async Task<bool> UpdateTransactionStatusAsync(int id, string status, string paymentStatus)
+    {
+        try
+        {
+            var result = await _saleTransactionsRepo.UpdateTransactionStatusAsync(id, status, paymentStatus);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error update sale transaction status Error");
+            return false;
+        }
+    }
 }
