@@ -91,11 +91,11 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
             param.Add("@Id", id);
 
             var query = @"
-            SELECT t.*, i.*, p.*
-            FROM SalesTransactions t
-            INNER JOIN SalesTransactionItem i ON t.Id = i.SalesTransactionId
-            INNER JOIN Products p ON i.ProductId = p.Id
-            WHERE t.Id = @Id";
+                SELECT t.*, i.*, p.*
+                FROM ""SalesTransactions"" t
+                INNER JOIN ""SalesTransactionItems"" i ON t.""Id"" = i.""SalesTransactionId""
+                INNER JOIN ""Products"" p ON i.""ProductId"" = p.""Id""
+                WHERE t.""Id"" = @Id";
 
             var transactionDictionary = new Dictionary<int, SalesTransaction>();
 
