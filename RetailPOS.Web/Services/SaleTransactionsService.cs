@@ -16,6 +16,20 @@ public class SaleTransactionsService : ISaleTransactionsService
         _saleTransactionsRepo = saleTransactionsRepo;
     }
 
+    public async Task<bool> CreateNewSaleTransaction(SalesTransaction model)
+    {
+        try
+        {
+            var result = await _saleTransactionsRepo.CreateNewSaleTransaction(model);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error Get sale transaction List Error");
+            return false;
+        }
+    }
+
     public async Task<List<SalesTransaction>> GetTransactionsWithItemsAsync()
     {
         try

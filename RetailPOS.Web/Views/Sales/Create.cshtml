@@ -89,95 +89,111 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function () {
-            let items = [];
+            let cartItems = [];
 
-            $('#addItem').click(function () {
+            $('#addItem').click(addItemToCart);
+            $(document).on('click', '.remove-item', removeItemFromCart);
+            $('#salesForm').submit(handleFormSubmission);
+
+            function addItemToCart() {
                 const productSelect = $('#productSelect');
-                const product = productSelect.find('option:selected');
+                const selectedProduct = productSelect.find('option:selected');
                 const quantity = parseInt($('#quantity').val());
 
-                if (!product.val() || quantity < 1) {
+                if (!selectedProduct.val() || quantity < 1) {
                     alert('Please select a product and enter a valid quantity.');
                     return;
                 }
 
-                const productId = product.val();
-                const productName = product.text();
-                const price = parseFloat(product.data('price'));
-                const stock = parseInt(product.data('stock'));
+                const productId = selectedProduct.val();
+                const productName = selectedProduct.text().split(' - ')[0].trim(); 
+                const price = parseFloat(selectedProduct.data('price'));
+                const stock = parseInt(selectedProduct.data('stock'));
 
                 if (quantity > stock) {
                     alert('Quantity exceeds available stock.');
                     return;
                 }
 
-                const item = {
-                    productId: productId,
-                    productName: productName,
-                    price: price,
-                    quantity: quantity,
-                    total: price * quantity
-                };
+             
+                let existingItem = cartItems.find(item => item.productId === productId);
+                if (existingItem) {
+                    existingItem.quantity += quantity;
+                    existingItem.total = existingItem.price * existingItem.quantity;
+                } else {
+                    const item = {
+                        productId,
+                        productName,
+                        price,
+                        quantity,
+                        total: price * quantity
+                    };
+                    cartItems.push(item);
+                }
 
-                items.push(item);
                 updateTable();
                 resetForm();
-            });
+            }
 
+         
             function updateTable() {
                 const tbody = $('#itemsTable tbody');
                 tbody.empty();
 
                 let total = 0;
-                items.forEach((item, index) => {
-                    tbody.append(`
-                        <tr>
-                            <td>${item.productName}</td>
-                            <td>$${item.price.toFixed(2)}</td>
-                            <td>${item.quantity}</td>
-                            <td>$${item.total.toFixed(2)}</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-outline-danger remove-item" data-index="${index}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `);
+                cartItems.forEach((item, index) => {
+                    const row = `
+                                <tr>
+                                    <td>${item.productName}</td>
+                                    <td>$${item.price.toFixed(2)}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>$${item.total.toFixed(2)}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-item" data-index="${index}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                    tbody.append(row);
                     total += item.total;
                 });
 
                 $('#totalAmount').text(`$${total.toFixed(2)}`);
             }
 
+         
             function resetForm() {
                 $('#productSelect').val('');
                 $('#quantity').val(1);
             }
 
-            $(document).on('click', '.remove-item', function () {
-                const index = $(this).data('index');
-                items.splice(index, 1);
+        
+            function removeItemFromCart(event) {
+                const index = $(event.currentTarget).data('index');
+                cartItems.splice(index, 1);
                 updateTable();
-            });
+            }
 
-            $('#salesForm').submit(function (e) {
-                e.preventDefault();
-                if (items.length === 0) {
+           
+            function handleFormSubmission(event) {
+                event.preventDefault();
+
+                if (cartItems.length === 0) {
                     alert('Please add at least one item to the sale.');
                     return;
                 }
 
-                // Add items to form data
-                items.forEach((item, index) => {
-                    $(`<input type="hidden" name="Items[${index}].ProductId" value="${item.productId}" />`).appendTo(this);
-                    $(`<input type="hidden" name="Items[${index}].Quantity" value="${item.quantity}" />`).appendTo(this);
+                const form = $(this);
+                cartItems.forEach((item, index) => {
+                    form.append(`<input type="hidden" name="Items[${index}].ProductId" value="${item.productId}" />`);
+                    form.append(`<input type="hidden" name="Items[${index}].Quantity" value="${item.quantity}" />`);
                 });
 
-                this.submit();
-            });
+                form[0].submit();
+            }
         });
     </script>
 }

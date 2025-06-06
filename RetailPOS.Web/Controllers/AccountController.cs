@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Services.IService;
 using RetailPOS.Web.Utility;

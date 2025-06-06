@@ -223,6 +223,36 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
         }
     }
 
+    public async Task<bool> CreateNewSaleTransaction(SalesTransaction model)
+    {
+        try
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
 
+            foreach (var item in model.Items)
+            {
+                var product = await context.Products.FindAsync(item.ProductId);
+                if (product == null || product.StockQuantity < item.Quantity)
+                {
+                    _logger.LogWarning($"Product {item.ProductId} not found or not enough stock.");
+                    return false;
+                }
 
+                item.UnitPrice = product.Price;
+                item.TotalPrice = product.Price * item.Quantity;
+                model.TotalAmount += item.TotalPrice;
+            }
+
+            context.SalesTransactions.Add(model);
+            await context.SaveChangesAsync();
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating new transaction");
+            return false;
+        }
+
+    }
 }

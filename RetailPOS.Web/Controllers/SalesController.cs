@@ -4,8 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using RetailPOS.Web.Data;
 using RetailPOS.Web.Models;
 using RetailPOS.Web.Utility;
-using RetailPOS.Web.Repositories.IRepository;
 using RetailPOS.Web.Services.IService;
+using Mapster;
+using RetailPOS.Web.Models.ViewModel;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace RetailPOS.Web.Controllers;
 
@@ -15,13 +18,15 @@ public class SalesController : Controller
     private readonly ApplicationDbContext _context;
     private ISaleTransactionsService _saleTransactionsService;
     private IProductService _productService;
-
+    private readonly UserManager<ApplicationUser> _userManager;
     public SalesController(ApplicationDbContext context,
         IProductService productService,
+        UserManager<ApplicationUser> userManager,
         ISaleTransactionsService saleTransactionsService)
     {
         _context = context;
         _productService = productService;
+        _userManager = userManager;
         _saleTransactionsService = saleTransactionsService;
     }
 
@@ -98,44 +103,60 @@ public class SalesController : Controller
         var sale = await _saleTransactionsService
             .GetTransactionWithItemsIdAsync(id.Value);
 
-        return sale == null ? NotFound() : View(sale);  
+        return sale is null ? NotFound() : View(sale);  
     }
     #endregion
 
 
-
-    // GET: Sales/Create
-    public IActionResult Create()
+    #region GET: Sales/Create
+    public async Task<IActionResult> Create()
     {
-        ViewBag.Products = _context.Products
-            .Where(p => p.StockQuantity > 0)
-            .OrderBy(p => p.Name)
-            .ToList();
+        var products = await _productService.GetCheckOutProductListAsync();
+
+        ViewBag.Products = products.Adapt<List<ProductViewModel>>()
+            .OrderBy(i => i.Name);
+
         return View();
     }
+    #endregion
 
 
-
-    // POST: Sales/Create
+    #region POST: Sales/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(SalesTransaction sale)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            sale.TransactionDate = DateTime.UtcNow;
-            sale.Status = "Pending";
-            _context.Add(sale);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            var products = await _productService.GetCheckOutProductListAsync();
+
+            ViewBag.Products = products.Adapt<List<ProductViewModel>>()
+                .OrderBy(i => i.Name);
+
+            return View(sale);
         }
 
-        ViewBag.Products = _context.Products
-            .Where(p => p.StockQuantity > 0)
-            .OrderBy(p => p.Name)
-            .ToList();
-        return View(sale);
+
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _userManager.FindByIdAsync(userId!);
+        if (user == null) return Unauthorized();
+
+        // Set user info into the incoming model
+        sale.UserId = userId;
+        sale.CustomerName = $"{user.FirstName} {user.LastName}";
+        sale.CustomerEmail = user.Email;
+        sale.TransactionDate = DateTime.UtcNow;
+        sale.Status = nameof(StatusEnum.PENDING);
+        sale.PaymentMethod = "SALE_CREATE";
+        sale.PaymentStatus = nameof(StatusEnum.PENDING);
+
+        await _saleTransactionsService.CreateNewSaleTransaction(sale);
+       
+        return RedirectToAction(nameof(Index));
     }
+    #endregion
+
 
 
     // GET: Sales/Delete/5
