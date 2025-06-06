@@ -20,9 +20,9 @@ public static class MappingConfig
         TypeAdapterConfig<ProductViewModel, Product>
               .NewConfig()
               .Ignore(dest => dest.Id)
-              .Ignore(dest => dest.Category)
+              .Ignore(dest => dest.Category!)
               .Ignore(dest => dest.CreatedAt)
-              .Ignore(dest => dest.UpdatedAt)
+              .Ignore(dest => dest.UpdatedAt!)
               .Ignore(dest => dest.Items)
               .Ignore(dest => dest.PriceHistory);
 

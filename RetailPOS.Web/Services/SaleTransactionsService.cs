@@ -16,11 +16,11 @@ public class SaleTransactionsService : ISaleTransactionsService
         _saleTransactionsRepo = saleTransactionsRepo;
     }
 
-    public async Task<SalesTransaction?> GetReceiptTransactionWithItemsAsync(int id)
+    public async Task<SalesTransaction?> GetTransactionWithItemsIdAsync(int id)
     {
         try
         {
-            var result = await _saleTransactionsRepo.GetReceiptTransactionWithItemsAsync(id);
+            var result = await _saleTransactionsRepo.GetTransactionWithItemsIdAsync(id);
 
             return result is null ? null : result;
         }

@@ -14,11 +14,14 @@ public class SalesController : Controller
 {
     private readonly ApplicationDbContext _context;
     private ISaleTransactionsService _saleTransactionsService;
+    private IProductService _productService;
 
     public SalesController(ApplicationDbContext context,
+        IProductService productService,
         ISaleTransactionsService saleTransactionsService)
     {
         _context = context;
+        _productService = productService;
         _saleTransactionsService = saleTransactionsService;
     }
 
@@ -35,6 +38,7 @@ public class SalesController : Controller
         var totalTransactions = sales.Count;
         var averageTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0;
 
+        
         ViewBag.TotalSales = totalSales;
         ViewBag.TotalTransactions = totalTransactions;
         ViewBag.AverageTransaction = averageTransaction;
@@ -97,29 +101,23 @@ public class SalesController : Controller
     // GET: Sales/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
+        if (id is null) return NotFound();
+        
 
-        var sale = await _context.SalesTransactions
-            .Include(s => s.Items)
-            .FirstOrDefaultAsync(s => s.Id == id);
+        var sale = await _saleTransactionsService.GetTransactionWithItemsIdAsync(id.Value);
 
-        if (sale == null)
-        {
-            return NotFound();
-        }
 
-        if (sale.Status is nameof(StatusEnum.COMPLETED))
-        {
-            return RedirectToAction(nameof(Index));
-        }
+        if (sale is null) return NotFound();
+        
 
-        ViewBag.Products = _context.Products
-            .Where(p => p.StockQuantity > 0)
-            .OrderBy(p => p.Name)
-            .ToList();
+        if (sale.Status is nameof(StatusEnum.COMPLETED))  return RedirectToAction(nameof(Index));
+        
+
+        ViewBag.Products = sale.Items
+            .Where(i => i.Product != null)
+            .Select(i => i.Product)
+            .ToList()
+            .OrderBy(i => i!.Name);
 
         return View(sale);
     }

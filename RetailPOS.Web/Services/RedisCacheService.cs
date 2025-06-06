@@ -14,7 +14,7 @@ public class RedisCacheService : IRedisCacheService
 
     public async Task<T?> GetData<T>(string key)
     {
-        var data = await _cache?.GetStringAsync(key);
+        var data = await _cache!.GetStringAsync(key);
 
 
         if (data is null) return default(T);   
@@ -25,7 +25,7 @@ public class RedisCacheService : IRedisCacheService
 
     public async Task RemoveData(string key)
     {
-       await _cache?.RemoveAsync(key);
+       await _cache!.RemoveAsync(key);
     }
 
     public async Task SetData<T>(string key, T data, TimeSpan? expire = null)
@@ -38,6 +38,6 @@ public class RedisCacheService : IRedisCacheService
         };
 
 
-        await _cache?.SetStringAsync(key, json, opt);
+        await _cache!.SetStringAsync(key, json, opt);
     }
 }

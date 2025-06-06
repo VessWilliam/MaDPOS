@@ -47,7 +47,7 @@ namespace RetailPOS.Web.Controllers
                 if (cart == null || !cart.Any()) return BadRequest("Cart is empty.");
 
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var user = await _userManager.FindByIdAsync(userId);
+                var user = await _userManager.FindByIdAsync(userId!);
                 if (user is null) return Unauthorized();
 
                 var transaction = new SalesTransaction
@@ -135,7 +135,7 @@ namespace RetailPOS.Web.Controllers
             if (id is null) return NotFound();
 
             var result = await _saleTransactionsService
-                .GetReceiptTransactionWithItemsAsync(id.Value);
+                .GetTransactionWithItemsIdAsync(id.Value);
 
             return result is null ? NotFound() : View(result);
 

@@ -90,7 +90,7 @@ public class CategoryService : ICategoryService
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Failed to get category with product");
-            return null;
+            return Enumerable.Empty<Category>();
         }
 
     }

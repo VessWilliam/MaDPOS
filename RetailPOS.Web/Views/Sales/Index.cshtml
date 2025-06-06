@@ -16,6 +16,7 @@
             <table class="table">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Date</th>
                         <th>Items</th>
                         <th>Total</th>
@@ -27,6 +28,7 @@
                     @foreach (var item in Model)
                     {
                         <tr>
+                            <td>@item.Id</td>
                             <td>@item.TransactionDate.ToString("g")</td>
                             <td>@item.Items.Count</td>
                             <td>@item.TotalAmount.ToString("C")</td>

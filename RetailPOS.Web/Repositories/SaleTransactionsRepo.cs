@@ -82,7 +82,7 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
     }
 
 
-    public async Task<SalesTransaction?> GetReceiptTransactionWithItemsAsync(int id)
+    public async Task<SalesTransaction?> GetTransactionWithItemsIdAsync(int id)
     {
         try
         {
@@ -90,19 +90,20 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
             param.Add("@Id", id);
 
             var query = @"
-                SELECT t.*, i.*, p.*
-                FROM ""SalesTransactions"" t
-                INNER JOIN ""SalesTransactionItems"" i ON t.""Id"" = i.""SalesTransactionId""
-                INNER JOIN ""Products"" p ON i.""ProductId"" = p.""Id""
-                WHERE t.""Id"" = @Id";
+            SELECT
+                t.""Id"" AS Id, t.""CustomerName"", t.""TransactionDate"", t.""Status"", t.""PaymentStatus"", t.""TotalAmount"",
+                t.""PaymentMethod"",i.""Id"" AS Id, i.""SalesTransactionId"", i.""ProductId"", i.""Quantity"", i.""UnitPrice"", i.""TotalPrice"",
+                p.""Id"" AS Id, p.""Name"", p.""Price"", p.""StockQuantity"", p.""ImageUrl""
+            FROM ""SalesTransactions"" t
+            INNER JOIN ""SalesTransactionItems"" i ON t.""Id"" = i.""SalesTransactionId""
+            INNER JOIN ""Products"" p ON i.""ProductId"" = p.""Id""
+            WHERE t.""Id"" = @Id";
 
             var transactionDictionary = new Dictionary<int, SalesTransaction>();
 
             return await _dapperBaseService.getDBConnectionAsync(async connection =>
             {
-                var result = await connection.QueryAsync<SalesTransaction,
-                    SalesTransactionItem,
-                    Product, SalesTransaction>(
+                var result = await connection.QueryAsync<SalesTransaction, SalesTransactionItem, Product, SalesTransaction>(
                     query,
                     (t, item, product) =>
                     {
@@ -114,11 +115,18 @@ public class SaleTransactionsRepo : Respository<SalesTransaction>, ISaleTransact
                         }
 
                         item.Product = product;
+
+                        if (product != null && item.Quantity > 0)
+                        {
+                            item.UnitPrice = product.Price;
+                            item.TotalPrice = product.Price * item.Quantity;
+                        }
+
                         transaction.Items.Add(item);
                         return transaction;
                     },
                     param,
-                    splitOn: "Id,ProductId" 
+                    splitOn: "Id,Id" 
                 );
 
                 return transactionDictionary.Values.FirstOrDefault();
