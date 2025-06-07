@@ -10,10 +10,7 @@ public class HomeController : Controller
 {
     private readonly ApplicationDbContext _context;
 
-    public HomeController(ApplicationDbContext context)
-    {
-        _context = context;
-    }
+    public HomeController(ApplicationDbContext context) => _context = context;
 
     public IActionResult Index()
     {
@@ -71,16 +68,9 @@ public class HomeController : Controller
         return View();
     }
 
-
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
+    public IActionResult Privacy() => View();
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View();
-    }
+    public IActionResult Error() => View();
+
 }
