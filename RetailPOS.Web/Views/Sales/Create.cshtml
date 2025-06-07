@@ -31,7 +31,7 @@
                                             <option value="@product.Id"
                                                     data-price="@product.Price"
                                                     data-stock="@product.StockQuantity">
-                                                @product.Name - @product.Price.ToString("C")
+                                                @product.Name - @product.Price.ToString("C", new System.Globalization.CultureInfo("en-US"))
                                             </option>
                                         }
                                     </select>

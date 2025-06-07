@@ -17,7 +17,7 @@
                 <dd class="col-sm-9">@Model.Status</dd>
 
                 <dt class="col-sm-3">Total Amount</dt>
-                <dd class="col-sm-9">@Model.TotalAmount.ToString("C")</dd>
+                <dd class="col-sm-9">@Model.TotalAmount.ToString("C", new System.Globalization.CultureInfo("en-US"))</dd>
 
                 @if (!string.IsNullOrEmpty(Model.CustomerName))
                 {
@@ -48,8 +48,8 @@
                         <tr>
                             <td>@item.Product?.Name</td>
                             <td>@item.Quantity</td>
-                            <td>@item.UnitPrice.ToString("C")</td>
-                            <td>@item.TotalPrice.ToString("C")</td>
+                            <td>@item.UnitPrice.ToString("C", new System.Globalization.CultureInfo("en-US"))</td>
+                            <td>@item.TotalPrice.ToString("C", new System.Globalization.CultureInfo("en-US"))</td>
                         </tr>
                     }
                 </tbody>
