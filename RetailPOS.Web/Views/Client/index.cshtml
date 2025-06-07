@@ -28,7 +28,7 @@
                         <div class="row">
                             <label class="col-4  col-form-label text-muted">Price</label>
                             <div class="col-5 ms-3 mt-3">
-                                <p class="card-text"><strong>@product.Price.ToString("C")</strong></p>
+                                <p class="card-text"><strong>@product.Price.ToString("C", new System.Globalization.CultureInfo("en-US"))</strong></p>
                             </div>
                         </div>
 
