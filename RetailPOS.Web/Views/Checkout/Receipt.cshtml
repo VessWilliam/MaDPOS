@@ -77,10 +77,31 @@
 </div>
 
 @section Scripts {
-    <script>
-        // Intentionally broken print functionality
-        function printReceipt() {
-            // Missing print implementation
+
+    <style>
+        @@media print {
+            nav, footer, .navbar, .footer, .sidebar {
+                display: none !important;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .container, .card {
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            .btn, a.btn {
+                display: none !important;
+            }
+
+            .container {
+                width: 100% !important;
+                max-width: none !important;
+            }
         }
-    </script>
+    </style>
 }

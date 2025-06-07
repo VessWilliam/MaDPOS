@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Sales Report";
+    decimal totalSales = Model?.Sum(s => s.TotalAmount) ?? 0m;
 }
 
 <div class="container">
@@ -19,7 +20,7 @@
                     <input type="date" class="form-control" id="endDate" name="endDate" value="@ViewBag.EndDate?.ToString("yyyy-MM-dd")">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">&nbsp;</label>
+                    <label class="form-label"> </label>
                     <button type="submit" class="btn btn-primary d-block">Generate Report</button>
                 </div>
             </form>
@@ -28,7 +29,7 @@
 
     <div class="card">
         <div class="card-body">
-            <div class="table-responsive">
+            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
                 <table class="table">
                     <thead>
                         <tr>
@@ -40,7 +41,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var sale in Model)
+                        @foreach (var sale in Model ?? Enumerable.Empty<RetailPOS.Web.Models.SalesTransaction>())
                         {
                             <tr>
                                 <td>@sale.Id</td>
@@ -53,8 +54,8 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2" class="text-end"><strong>Total Sales:</strong></td>
-                            <td colspan="2"><strong>@Model.Sum(s => s.TotalAmount).ToString("C")</strong></td>
+                            <td colspan="3" class="text-end"><strong>Total Sales:</strong></td>
+                            <td colspan="3"><strong>@totalSales.ToString("C")</strong></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -62,3 +63,28 @@
         </div>
     </div>
 </div>
+
+<style>
+    .table-container {
+        max-height: 400px; 
+        overflow-y: auto;
+        display: block;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+     
+        z-index: 1;
+    }
+
+    tfoot {
+        position: sticky;
+        bottom: 0;
+        z-index: 1;
+    }
+</style>

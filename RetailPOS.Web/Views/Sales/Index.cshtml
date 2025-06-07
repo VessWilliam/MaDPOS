@@ -13,38 +13,59 @@
 
     <div class="card">
         <div class="card-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Date</th>
-                        <th>Items</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
+            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                <table class="table">
+                    <thead>
                         <tr>
-                            <td>@item.Id</td>
-                            <td>@item.TransactionDate.ToString("MM/dd/yyyy")</td>
-                            <td>@item.Items.Count</td>
-                            <td>@item.TotalAmount.ToString("C")</td>
-                            <td>@item.Status</td>
-                            <td>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Details</a>
-                                @if (item.Status is "PENDING" || item.Status is "Pending")
-                                {
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Edit</a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Delete</a>
-                                }
-                            </td>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.TransactionDate.ToString("MM/dd/yyyy")</td>
+                                <td>@item.Items.Count</td>
+                                <td>@item.TotalAmount.ToString("C")</td>
+                                <td>@item.Status</td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Details</a>
+                                    @if (item.Status is "PENDING" || item.Status is "Pending")
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Edit</a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Delete</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    .table-container {
+        max-height: 400px;
+        overflow-y: auto;
+        display: block;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa; /
+        z-index: 1;
+    }
+</style>
