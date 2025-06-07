@@ -1,4 +1,7 @@
-﻿namespace RetailPOS.Web.Services.IService;
+﻿using Azure.Core;
+using Azure;
+
+namespace RetailPOS.Web.Services.IService;
 
 public interface IRedisCacheService
 {
@@ -6,6 +9,8 @@ public interface IRedisCacheService
 
     Task SetData<T>(string key, T data, TimeSpan? expire);
 
-    public Task RemoveData(string key); 
+    public Task RemoveData(string key);
+
+    public string GetOrCreateCartId();
 
 }

@@ -34,7 +34,8 @@ public class ClientController : Controller
 
     public async Task<IActionResult> Cart()
     {
-        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(CartItemViewModel)) ?? new();
+        var cartId = _redisCacheService.GetOrCreateCartId();
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(cartId) ?? new();
         return View(cart);
     }
 
@@ -44,12 +45,14 @@ public class ClientController : Controller
         var product = await _productService.GetProductViewModelWithIdAsync(id);
         if (product is null) return NotFound();
 
-        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(CartItemViewModel)) ?? new();
+        var cartId = _redisCacheService.GetOrCreateCartId();
+
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(cartId) ?? new();
 
         var item = cart.FirstOrDefault(c => c.ProductId == id);
-        if (item != null)
+        if (item is not null)
         {
-            item.Quantity += 1;
+            item.Quantity = 1;
         }
         else
         {
@@ -63,7 +66,7 @@ public class ClientController : Controller
             });
         }
 
-        await _redisCacheService.SetData(nameof(CartItemViewModel), cart, TimeSpan.FromMinutes(30));
+        await _redisCacheService.SetData(cartId, cart, TimeSpan.FromMinutes(30));
         return RedirectToAction(nameof(Cart));
     }
 
@@ -71,7 +74,9 @@ public class ClientController : Controller
     public async Task<IActionResult> UpdateCart(int ProductId, int Quantity)
     {
 
-        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(CartItemViewModel)) ?? new();
+
+        var cartId = _redisCacheService.GetOrCreateCartId();
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(cartId) ?? new();
 
 
         var item = cart.FirstOrDefault(c => c.ProductId == ProductId);
@@ -82,7 +87,7 @@ public class ClientController : Controller
             else
                 item.Quantity = Quantity;
 
-            await _redisCacheService.SetData(nameof(CartItemViewModel), cart, TimeSpan.FromMinutes(30));
+            await _redisCacheService.SetData(cartId, cart, TimeSpan.FromMinutes(30));
         }
 
         return RedirectToAction(nameof(Cart));
@@ -92,14 +97,15 @@ public class ClientController : Controller
     [HttpPost]
     public async Task<IActionResult> RemoveCart(int ProductId)
     {
-        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(Cart)) ?? new();
+        var cartId = _redisCacheService.GetOrCreateCartId();
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(cartId) ?? new();
 
         var item = cart.FirstOrDefault(c => c.ProductId == ProductId);
         if (item is not null)
             cart.Remove(item);
 
 
-        await _redisCacheService.SetData(nameof(CartItemViewModel), cart, TimeSpan.FromMinutes(30));
+        await _redisCacheService.SetData(cartId, cart, TimeSpan.FromMinutes(30));
 
 
         return RedirectToAction(nameof(Index));
@@ -109,7 +115,8 @@ public class ClientController : Controller
     [HttpGet]
     public async Task<IActionResult> Checkout()
     {
-        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(Cart)) ?? new();
+        var cartId = _redisCacheService.GetOrCreateCartId();
+        var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(cartId) ?? new();
 
         var viewModel = new CheckoutViewModel
         {
@@ -122,6 +129,8 @@ public class ClientController : Controller
 
     [HttpPost]
     public IActionResult ProceedToCheckout() => RedirectToAction(nameof(Index), "Checkout");
+
+
 
 
 
