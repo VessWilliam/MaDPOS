@@ -47,7 +47,7 @@
                                 <td>@sale.Id</td>
                                 <td>@sale.TransactionDate.ToString("MM/dd/yyyy")</td>
                                 <td>@sale.Items.Count</td>
-                                <td>@sale.TotalAmount.ToString("C")</td>
+                                <td>@sale.TotalAmount.ToString("C", new System.Globalization.CultureInfo("en-US"))</td>
                                 <td>@sale.Status</td>
                             </tr>
                         }
@@ -55,7 +55,7 @@
                     <tfoot>
                         <tr>
                             <td colspan="3" class="text-end"><strong>Total Sales:</strong></td>
-                            <td colspan="3"><strong>@totalSales.ToString("C")</strong></td>
+                            <td colspan="3"><strong>@totalSales.ToString("C", new System.Globalization.CultureInfo("en-US"))</strong></td>
                         </tr>
                     </tfoot>
                 </table>
