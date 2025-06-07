@@ -7,8 +7,13 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 ARG BUILD_CONFIGURATION=Release
+
 WORKDIR /src
+# COPY csproj and appsettings.json
 COPY ["RetailPOS.Web/RetailPOS.Web.csproj", "RetailPOS.Web/"]
+COPY ["RetailPOS.Web/appsettings.json", "RetailPOS.Web/"] 
+
+
 RUN dotnet restore "./RetailPOS.Web/RetailPOS.Web.csproj"
 COPY . .
 WORKDIR "/src/RetailPOS.Web"
