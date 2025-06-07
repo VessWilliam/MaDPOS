@@ -8,7 +8,7 @@ public static class ProductAPI
     public static void MapProductEndpoints(IEndpointRouteBuilder app)
     {
         // GET /api/products
-        app.MapGet("/products", async ([FromServices] IProductService productService) =>
+        app.MapGet("/api/products", async ([FromServices] IProductService productService) =>
         {
             var products = await productService.GetCheckOutProductListAsync();
 
@@ -30,7 +30,7 @@ public static class ProductAPI
         });
 
         // GET /api/products/{id}
-        app.MapGet("/products/{id:int}", async (int id, [FromServices] IProductService productService) =>
+        app.MapGet("/api/products/{id:int}", async (int id, [FromServices] IProductService productService) =>
         {
             var product = await productService.GetProductViewModelWithIdAsync(id);
 

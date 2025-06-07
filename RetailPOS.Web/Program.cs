@@ -109,7 +109,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MaD POS Ex API");
-    c.RoutePrefix = "api";
+    c.RoutePrefix = "swagger";
 });
 
 
