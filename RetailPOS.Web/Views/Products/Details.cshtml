@@ -17,7 +17,7 @@
                 <dd class="col-sm-9">@(Model.Description ?? "No description available")</dd>
 
                 <dt class="col-sm-3">Price</dt>
-                <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+                <dd class="col-sm-9">@Model.Price.ToString("C", new System.Globalization.CultureInfo("en-US"))</></dd>
 
                 <dt class="col-sm-3">Stock Quantity</dt>
                 <dd class="col-sm-9">@Model.StockQuantity</dd>
