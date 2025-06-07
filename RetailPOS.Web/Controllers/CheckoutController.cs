@@ -42,7 +42,8 @@ namespace RetailPOS.Web.Controllers
         {
             try
             {
-                var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(CartItemViewModel));
+                var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(_redisCacheService
+                    .GetOrCreateCartId());
 
                 if (cart == null || !cart.Any()) return BadRequest("Cart is empty.");
 
@@ -73,7 +74,7 @@ namespace RetailPOS.Web.Controllers
                 }
 
 
-                await _redisCacheService.RemoveData(nameof(CartItemViewModel));
+                await _redisCacheService.RemoveData(_redisCacheService.GetOrCreateCartId());
                 return RedirectToAction(nameof(Receipt), new { id = transactionId });
             }
             catch (InvalidOperationException ex)
@@ -90,7 +91,8 @@ namespace RetailPOS.Web.Controllers
         {
             var products = await _productService.GetCheckOutProductListAsync();
 
-            var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(CartItemViewModel)) ?? new();
+            var cart = await _redisCacheService
+                .GetData<List<CartItemViewModel>>(_redisCacheService.GetOrCreateCartId()) ?? new();
 
             var model = new CheckoutViewModel
             {
@@ -105,7 +107,7 @@ namespace RetailPOS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveCart([FromBody] List<CartItemViewModel> cart)
         {
-            await _redisCacheService.SetData(nameof(CartItemViewModel), cart, TimeSpan.FromMinutes(30));
+            await _redisCacheService.SetData(_redisCacheService.GetOrCreateCartId(), cart, TimeSpan.FromMinutes(30));
             return Ok();
         }
 
@@ -113,7 +115,7 @@ namespace RetailPOS.Web.Controllers
         // GET: Checkout/Payment
         public async Task<IActionResult> Payment()
         {
-            var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(nameof(CartItemViewModel)) ?? new();
+            var cart = await _redisCacheService.GetData<List<CartItemViewModel>>(_redisCacheService.GetOrCreateCartId()) ?? new();
 
             if (!cart.Any())
             {

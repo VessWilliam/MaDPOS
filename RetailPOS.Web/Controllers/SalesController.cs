@@ -12,7 +12,7 @@ using System.Security.Claims;
 
 namespace RetailPOS.Web.Controllers;
 
-[Authorize(Roles = $"{UserRoleConstant.Admin},{UserRoleConstant.Manager}, {UserRoleConstant.Cashier}")]
+[Authorize(Roles = $"{UserRoleConstant.Admin},{UserRoleConstant.Manager}")]
 public class SalesController : Controller
 {
 

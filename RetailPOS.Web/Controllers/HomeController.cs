@@ -1,9 +1,6 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RetailPOS.Web.Data;
-using RetailPOS.Web.Models;
-using System.Linq;
 using Newtonsoft.Json;
 using RetailPOS.Web.Utility;
 
