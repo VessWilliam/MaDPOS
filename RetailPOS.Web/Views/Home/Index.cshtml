@@ -2,73 +2,32 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-md-12">
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
             <h2>Dashboard</h2>
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card">
+    <!-- Summary + Recent Sales -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">Today's Sales</h5>
-                    <p class="card-text h3">$@ViewBag.TotalSales</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Total Products</h5>
+                    <p class="card-text h3 text-success">$@ViewBag.TotalSales</p>
+                    <h5 class="card-title mt-3">Total Products</h5>
                     <p class="card-text h3">@ViewBag.TotalProducts</p>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="row">
+
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Quick Actions</h5>
-                    @{
-                        var isAuth = User.Identity?.IsAuthenticated ?? false;
-                    }
-                    <div class="list-group">
-                          @if (isAuth)
-                          {       
-                              @if (User.IsInRole("Cashier"))
-                             {
-                                <a asp-controller="Checkout" asp-action="Index" class="list-group-item list-group-item-action">
-                                    <i class="fas fa-cash-register"></i> New Sale
-                                </a>
-                             }
-                            
-                     
-                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
-                            {
-                                <a asp-controller="Checkout" asp-action="Index" class="list-group-item list-group-item-action">
-                                    <i class="fas fa-cash-register"></i> New Sale
-                                </a>
-                                <a asp-controller="Products" asp-action="Index" class="list-group-item list-group-item-action">
-                                    <i class="fas fa-box"></i> Manage Products
-                                </a>
-                                <a asp-controller="Sales" asp-action="Index" class="list-group-item list-group-item-action">
-                                    <i class="fas fa-history"></i> View Sales History
-                                </a>
-                            }
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
+            <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">Recent Sales</h5>
-                    <div class="list-group">
+                    <div class="list-group overflow-auto shadow-sm" style="max-height: 120px;">
                         @foreach (var transaction in ViewBag.RecentTransactions)
                         {
                             <div class="list-group-item">
@@ -76,7 +35,7 @@
                                     <h6 class="mb-1">Sale #@transaction.Id</h6>
                                     <small>@transaction.TransactionDate.ToString("g")</small>
                                 </div>
-                                <p class="mb-1">$@transaction.TotalAmount</p>
+                                <p class="mb-1 text-muted">$@transaction.TotalAmount</p>
                             </div>
                         }
                     </div>
@@ -84,4 +43,50 @@
             </div>
         </div>
     </div>
+    <!-- Sales Chart -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="card w-100">
+                <div class="card-body">
+                    <h5 class="card-title">Sales (Last 7 Days)</h5>
+                    <canvas id="salesChart" height="60"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const chartData = @Html.Raw(ViewBag.ChartData);
+
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Sales ($)',
+                    data: chartData.data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 20
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}
