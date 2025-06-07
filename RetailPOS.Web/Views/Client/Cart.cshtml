@@ -29,8 +29,8 @@
                     <tr>
                         <td><img src="@item.imageUrl" width="80" height="60" style="object-fit" /></td>
                         <td class="text-white pt-4">@item.ProductName</td>
-                        <td class="text-white pt-4">@item.Price.ToString("C")</td>
-                        <td class=" text-white pt-4">@((item.Price * item.Quantity).ToString("C")) </td>
+                        <td class="text-white pt-4">@item.Price.ToString("C", new System.Globalization.CultureInfo("en-US"))</td>
+                        <td class=" text-white pt-4">@((item.Price * item.Quantity).ToString("C", new System.Globalization.CultureInfo("en-US"))) </td>
 
                         <td class="align-middle">
                         <form asp-action="UpdateCart" method="post" class="d-flex align-items-center gap-2">
