@@ -1,7 +1,9 @@
 ##MaD POS 🧸
 
 💡 Notes
-	•Using .net 7 with Efcore and postgressql
+	> Using .net 7 ASP.NET CORE
+        > EFCore & Dapper
+        > Postgrest
 
 
 
